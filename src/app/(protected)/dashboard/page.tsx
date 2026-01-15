@@ -34,10 +34,10 @@ import UserDashboardLayout from '@/components/layout/user-dashboard';
 import DesktopTabs from '@/components/user-dashboard/desktop-tabs';
 import renderMobileTabContent from '@/components/user-dashboard/mobile-tabs';
 
-type UserRole = 'member' | 'admin' | 'super_admin';
-type EventStatus = 'registered' | 'attended' | 'completed' | 'upcoming';
-type NotificationType = 'event' | 'academic' | 'system' | 'membership';
-type EventType = 'all' | 'competition' | 'workshop' | 'seminar';
+export type UserRole = 'member' | 'admin' | 'super_admin';
+export type EventStatus = 'registered' | 'attended' | 'completed' | 'upcoming';
+export type NotificationType = 'event' | 'academic' | 'system' | 'membership';
+export type EventType = 'all' | 'competition' | 'workshop' | 'seminar';
 
 export interface UserProfile {
     id: number;

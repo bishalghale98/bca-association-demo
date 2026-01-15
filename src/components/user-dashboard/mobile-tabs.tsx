@@ -20,6 +20,7 @@ import {
     CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EventType } from "@/app/(protected)/dashboard/page";
 
 /* ================= PROPS ================= */
 
