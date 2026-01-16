@@ -28,13 +28,8 @@ const BottomNav = () => {
     const moreMenuItems = [
         {
             name: 'Profile',
-            href: '/profile',
+            href: '/dashboard/profile',
             icon: User,
-        },
-        {
-            name: 'Settings',
-            href: '/settings',
-            icon: Settings,
         },
         {
             name: 'Help & Support',

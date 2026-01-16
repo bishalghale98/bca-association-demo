@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  // 🔑 Core Identity
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  avatarUrl String?
+  role      UserRole @default(MEMBER)
+  password  String
+
+  // 🎓 Academic Information
+  studentId      String  @unique
+  course         String?
+  specialization String?
+  semester       Int
+  year           Int?
+
+  // 👤 Personal Profile
+  dateOfBirth      DateTime?
+  gender           Gender?
+  address          String?
+  bio              String?
+  bloodGroup       String?
+  emergencyContact String?
+
+  // 🏷 Membership & System Info
+  joinDate         DateTime?        @default(now())
+  membershipStatus MembershipStatus @default(PENDING)
+
+  // 🏆 Gamification / Engagement
+  points          Int @default(0)
+  level           Int @default(1)
+  nextLevelPoints Int @default(100)
+
+  // ⏱ System Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+  SUPER_ADMIN
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+

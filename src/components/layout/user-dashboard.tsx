@@ -6,32 +6,60 @@ import Link from 'next/link'
 import BottomNav from '../user-dashboard/bottom-nav'
 import { Bell, BookOpen, Building, Calendar, ChevronLeft, ChevronRight, FileText, LayoutDashboard, LogOut, Mail, MessageSquare, Settings, Shield, Trophy, Users } from 'lucide-react'
 import Header from '../user-dashboard/header'
+import { Notification } from '@/app/(protected)/dashboard/page'
 
 interface UserDashboardLayoutProps {
-    children: React.ReactNode
-    unreadNotifications: number
-    user: any
-    handleLogout: () => void
+    children?: React.ReactNode
+
 }
 
 const UserDashboardLayout = ({
     children,
-    unreadNotifications,
-    user,
-    handleLogout,
+
 }: UserDashboardLayoutProps) => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
     const pathname = usePathname()
 
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-        { id: 'form', label: 'form', icon: Users, href: '/dashboard/form' },
+        { id: 'profile', label: 'profile', icon: Users, href: '/dashboard/profile' },
     ]
 
     const footerItems = [
         { id: 'resources', label: 'Resources', icon: BookOpen, href: '/resources', external: true },
         { id: 'help', label: 'Help Center', icon: Mail, href: '/help', external: true },
     ]
+
+
+    const notifications: Notification[] = [
+        { id: 1, title: "Event Registration Confirmed", message: "Your registration for Annual Hackathon is confirmed", type: "event", time: "2 hours ago", read: false },
+        { id: 2, title: "Certificate Available", message: "Download your certificate for AI Workshop", type: "academic", time: "1 day ago", read: false },
+        { id: 3, title: "Membership Renewal", message: "Your membership expires in 15 days", type: "membership", time: "2 days ago", read: true },
+        { id: 4, title: "System Maintenance", message: "Portal will be down for maintenance", type: "system", time: "3 days ago", read: true },
+    ];
+
+    const unreadNotifications = notifications.filter(n => !n.read).length;
+
+    const user = {
+        id: 1,
+        name: "John Doe",
+        email: "john.doe@mmmc.edu",
+        phone: "+1 (555) 123-4567",
+        studentId: "BCA20240123",
+        course: "Bachelor of Computer Applications",
+        semester: 5,
+        role: 'member',
+        joinDate: "2023-08-15",
+        membershipStatus: 'active',
+        points: 850,
+        level: 3,
+        nextLevelPoints: 1000,
+    }
+
+    const handleLogout = () => {
+        console.log("logout logic")
+    }
+
 
     // Find current page title based on pathname
     const getCurrentPageTitle = () => {
@@ -86,8 +114,9 @@ const UserDashboardLayout = ({
                             </div>
                             {menuItems.map((item) => {
                                 const Icon = item.icon
-                                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-
+                                const isActive =
+                                    pathname === item.href ||
+                                    (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`))
                                 return (
                                     <Link
                                         key={item.id}

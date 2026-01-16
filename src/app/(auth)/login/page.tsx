@@ -37,10 +37,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useSession, signIn, signOut } from "next-auth/react"
+
 
 // Define form schema with Zod
 const loginFormSchema = z.object({
-  identifier: z
+  email: z
     .string()
     .min(1, { message: "Email or Student ID is required" })
     .refine(
@@ -72,7 +74,7 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      identifier: "",
+      email: "",
       password: "",
       rememberMe: false,
     },
@@ -82,23 +84,25 @@ export default function LoginPage() {
     setIsLoading(true);
     setLoginError(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Login data:", data);
-      setIsLoading(false);
+    console.log(data)
 
-      // Simulate different login scenarios
-      if (data.identifier.includes("pending")) {
-        setLoginError("Your account is pending verification. Please wait for admin approval.");
-      } else if (data.identifier.includes("rejected")) {
-        setLoginError("Your account verification was rejected. Please contact the association.");
-      } else if (data.password === "wrongpassword") {
-        setLoginError("Invalid credentials. Please check your email/student ID and password.");
-      } else {
-        // Successful login logic would go here
-        console.log("Login successful!");
+    // Simulate API call
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      })
+
+      if (res?.error) {
+        console.error("Error while login")
       }
-    }, 1500);
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsLoading(false)
+
+    }
   };
 
   const features = [
@@ -324,7 +328,7 @@ export default function LoginPage() {
                     {/* Email/Student ID Field */}
                     <FormField
                       control={form.control}
-                      name="identifier"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className={cn(
@@ -342,7 +346,7 @@ export default function LoginPage() {
                                   "pl-10 h-11 text-sm sm:text-base",
                                   "border-[#E5E7EB] dark:border-[#1E293B]",
                                   "focus:border-[#2563EB] dark:focus:border-[#38BDF8]",
-                                  form.formState.errors.identifier && "border-[#EF4444] focus:border-[#EF4444]"
+                                  form.formState.errors.email && "border-[#EF4444] focus:border-[#EF4444]"
                                 )}
                                 disabled={isLoading}
                                 {...field}
