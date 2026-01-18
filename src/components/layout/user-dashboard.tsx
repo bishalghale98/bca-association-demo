@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import BottomNav from '../user-dashboard/bottom-nav'
-import { Bell, BookOpen, Building, Calendar, ChevronLeft, ChevronRight, FileText, LayoutDashboard, LogOut, Mail, MessageSquare, Settings, Shield, Trophy, Users } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, LayoutDashboard, LogOut, Mail, Shield, Users } from 'lucide-react'
 import Header from '../user-dashboard/header'
 import { Notification } from '@/app/(protected)/dashboard/page'
 import { signOut, useSession } from 'next-auth/react'
@@ -56,9 +56,9 @@ const UserDashboardLayout = ({
     // Redirect to login if unauthenticated
     if (status === "unauthenticated") {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A] flex items-center justify-center">
+            <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A] flex items-center justify-center">
                 <div className="text-center max-w-md mx-4">
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center shadow-lg">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-linear-to-br from-red-500 to-pink-600 flex items-center justify-center shadow-lg">
                         <Shield className="w-10 h-10 text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">
@@ -69,7 +69,7 @@ const UserDashboardLayout = ({
                     </p>
                     <Link
                         href="/login"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
                     >
                         <LogOut className="w-5 h-5" />
                         Go to Login
@@ -80,10 +80,10 @@ const UserDashboardLayout = ({
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+        <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
             {/* Desktop Sidebar - Hidden on mobile, shown on md and above */}
             <aside
-                className={`hidden md:block fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-64'
+                className={`hidden lg:block fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-64'
                     } border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg`}
             >
                 <div className="flex h-full flex-col">
@@ -92,7 +92,7 @@ const UserDashboardLayout = ({
                         <Link href="/dashboard" className="flex items-center gap-2">
                             {!sidebarCollapsed && (
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-md">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-linear-to-br from-blue-600 to-blue-700 shadow-md">
                                         <Shield className="w-6 h-6 text-white" />
                                     </div>
                                     <div className="flex flex-col">
@@ -180,7 +180,7 @@ const UserDashboardLayout = ({
                         <div className={`flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer ${sidebarCollapsed ? 'justify-center' : ''}`}>
                             {status === "authenticated" && session ? (
                                 <>
-                                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 text-white font-semibold text-sm shadow-md">
+                                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-linear-to-br from-violet-600 to-purple-600 text-white font-semibold text-sm shadow-md">
                                         {session.user.avatarUrl || session.user.name?.charAt(0) || 'U'}
                                     </div>
                                     {!sidebarCollapsed && (
@@ -225,7 +225,7 @@ const UserDashboardLayout = ({
 
             {/* Main Content - Adjust margin based on sidebar state and screen size */}
             <div
-                className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
+                className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
                     }`}
             >
                 {/* Top Header - Pass session and status to handle loading there too */}
@@ -237,7 +237,7 @@ const UserDashboardLayout = ({
                 />
 
                 {/* Main Content Area */}
-                <div className="max-w-7xl mb-20 md:mb-0 mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 md:py-8">
+                <div className="max-w-7xl mb-20 lg:mb-0 mx-auto px-3 sm:px-4  lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
                     {children}
                 </div>
 

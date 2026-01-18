@@ -37,7 +37,7 @@ const DesktopTabs = ({
     markNotificationAsRead,
 }: DesktopTabsProps) => {
 
-    const { data: session, status } = useSession()
+    const { data: session } = useSession()
 
     return (
         <div className="hidden lg:block">

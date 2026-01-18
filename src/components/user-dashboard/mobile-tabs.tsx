@@ -21,13 +21,15 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EventType } from "@/app/(protected)/dashboard/page";
+import { useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 
 /* ================= PROPS ================= */
 
 interface RenderMobileTabContentProps {
     activeTab: string;
 
-    user: any;
+    session: Session | null;
     userEvents: any[];
     documents: any[];
     notifications: any[];
@@ -51,7 +53,7 @@ interface RenderMobileTabContentProps {
 
 const renderMobileTabContent = ({
     activeTab,
-    user,
+    session,
     userEvents,
     documents,
     notifications,
@@ -65,6 +67,9 @@ const renderMobileTabContent = ({
     filteredEvents,
     markNotificationAsRead,
 }: RenderMobileTabContentProps) => {
+
+
+
     switch (activeTab) {
         case 'overview':
             return (
@@ -73,7 +78,7 @@ const renderMobileTabContent = ({
                     <Card className="border-[#E5E7EB] dark:border-[#1E293B]">
                         <CardContent className="p-3 sm:p-4">
                             <h2 className="text-base sm:text-lg font-bold text-[#0F172A] dark:text-[#E5E7EB] mb-1.5 sm:mb-2">
-                                Welcome back, {user.name.split(' ')[0]}! 👋
+                                Welcome back, {session?.user.name.split(' ')[0]}! 👋
                             </h2>
                             <p className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] mb-2.5 sm:mb-3">
                                 Here&apos;s what&apos;s happening with your membership today.

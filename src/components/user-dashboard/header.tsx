@@ -1,6 +1,5 @@
 import { Bell, Building, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
-import { UserProfile } from '@/app/(protected)/dashboard/page'
 import type { Session } from "next-auth";
 import { UserRole } from '@/types/user/enums';
 

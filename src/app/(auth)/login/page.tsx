@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useSession, signIn } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -138,7 +138,7 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[#F8FAFC] to-[#E5E7EB] dark:from-[#020617] dark:to-[#0F172A]">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-[#F8FAFC] to-[#E5E7EB] dark:from-[#020617] dark:to-[#0F172A]">
       <div className="max-w-6xl w-full">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
           {/* Left Side - Information & Features (Desktop Only) */}
@@ -148,7 +148,7 @@ export default function LoginPage() {
               <div className="flex items-center space-x-3">
                 <div className={cn(
                   "w-12 h-12 rounded-xl flex items-center justify-center shadow-lg",
-                  "bg-gradient-to-br from-[#2563EB] to-[#38BDF8]"
+                  "bg-linear-to-br from-[#2563EB] to-[#38BDF8]"
                 )}>
                   <GraduationCap className="w-7 h-7 text-white" />
                 </div>
@@ -248,7 +248,7 @@ export default function LoginPage() {
               </h4>
               <div className="space-y-2.5">
                 <div className="flex items-start space-x-2">
-                  <CheckCircle className="w-4 h-4 text-[#22C55E] mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-[#22C55E] mt-0.5 shrink-0" />
                   <span className={cn(
                     "text-sm",
                     "text-[#475569] dark:text-[#94A3B8]"
@@ -257,7 +257,7 @@ export default function LoginPage() {
                   </span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 text-[#F59E0B] mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-[#F59E0B] mt-0.5 shrink-0" />
                   <span className={cn(
                     "text-sm",
                     "text-[#475569] dark:text-[#94A3B8]"
@@ -266,7 +266,7 @@ export default function LoginPage() {
                   </span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 text-[#EF4444] mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-[#EF4444] mt-0.5 shrink-0" />
                   <span className={cn(
                     "text-sm",
                     "text-[#475569] dark:text-[#94A3B8]"
@@ -290,7 +290,7 @@ export default function LoginPage() {
                 <div className="lg:hidden flex justify-center mb-2">
                   <div className={cn(
                     "w-14 h-14 rounded-full flex items-center justify-center shadow-lg",
-                    "bg-gradient-to-br from-[#2563EB] to-[#38BDF8]"
+                    "bg-linear-to-br from-[#2563EB] to-[#38BDF8]"
                   )}>
                     <GraduationCap className="w-7 h-7 text-white" />
                   </div>
@@ -300,7 +300,7 @@ export default function LoginPage() {
                 <div className="hidden lg:flex justify-center mb-2">
                   <div className={cn(
                     "w-16 h-16 rounded-full flex items-center justify-center shadow-lg",
-                    "bg-gradient-to-br from-[#2563EB] to-[#38BDF8]"
+                    "bg-linear-to-br from-[#2563EB] to-[#38BDF8]"
                   )}>
                     <LogIn className="w-8 h-8 text-white" />
                   </div>
@@ -462,7 +462,7 @@ export default function LoginPage() {
                       className={cn(
                         "w-full h-12 text-base font-semibold",
                         "sm:h-14 sm:text-lg",
-                        "bg-gradient-to-r from-[#2563EB] to-[#38BDF8]",
+                        "bg-linear-to-r from-[#2563EB] to-[#38BDF8]",
                         "hover:from-[#1D4ED8] hover:to-[#0EA5E9]",
                         "dark:from-[#2563EB] dark:to-[#3B82F6]",
                         "shadow-lg hover:shadow-xl",

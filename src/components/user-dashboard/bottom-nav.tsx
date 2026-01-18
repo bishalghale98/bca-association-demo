@@ -50,7 +50,7 @@ const BottomNav = () => {
     return (
         <>
             {/* Mobile Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#E5E7EB] dark:border-[#1E293B] bg-white dark:bg-[#020617] md:hidden">
+            <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#E5E7EB] dark:border-[#1E293B] bg-white dark:bg-[#020617] lg:hidden">
                 <div className="flex items-center justify-around h-16 px-4">
                     {mainNavItems.map((item) => (
                         <Link

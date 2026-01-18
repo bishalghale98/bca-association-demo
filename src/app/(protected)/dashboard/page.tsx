@@ -30,9 +30,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import UserDashboardLayout from '@/components/layout/user-dashboard';
 import DesktopTabs from '@/components/user-dashboard/desktop-tabs';
 import renderMobileTabContent from '@/components/user-dashboard/mobile-tabs';
+import { useSession } from 'next-auth/react';
+import { MembershipStatus } from '@/types/user/enums';
 
 export type UserRole = 'member' | 'admin' | 'super_admin';
 export type EventStatus = 'registered' | 'attended' | 'completed' | 'upcoming';
@@ -104,6 +105,8 @@ export default function UserDashboard() {
         nextLevelPoints: 1000,
     });
 
+    const {data: session} = useSession()
+
     const userEvents: UserEvent[] = [
         { id: 1, title: "Annual BCA Hackathon 2024", date: "Dec 15-16, 2024", type: "Competition", status: "registered" },
         { id: 2, title: "AI & ML Workshop", date: "Nov 30, 2024", type: "Workshop", status: "attended", certificateUrl: "#" },
@@ -156,7 +159,7 @@ export default function UserDashboard() {
     };
 
     const unreadNotifications = notifications.filter(n => !n.read).length;
-    const progressPercentage = (user.points / user.nextLevelPoints) * 100;
+    const progressPercentage = (session?.user?.points / session?.user?.nextLevelPoints) * 100;
 
     const mobileTabConfig = [
         { id: 'overview', label: 'Overview', icon: Home },
@@ -186,31 +189,31 @@ export default function UserDashboard() {
                             <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4">
                                 <Avatar className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-2 sm:border-3 lg:border-4 border-white dark:border-[#0F172A]">
                                     <AvatarFallback className="bg-[#2563EB] text-white text-lg sm:text-xl lg:text-2xl">
-                                        {user.name.split(' ').map(n => n[0]).join('')}
+                                        {session?.user.name.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
 
                                 <div className="w-full">
                                     <h2 className="text-base sm:text-lg lg:text-xl font-bold text-[#0F172A] dark:text-[#E5E7EB] truncate">
-                                        {user.name}
+                                        {session?.user.name}
                                     </h2>
                                     <p className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] truncate">
-                                        {user.course}
+                                        {session?.user.course}
                                     </p>
                                     <Badge className={cn(
                                         "mt-2 text-xs sm:text-sm",
-                                        user.membershipStatus === 'active'
+                                        session?.user.membershipStatus === MembershipStatus.ACTIVE
                                             ? "bg-[#22C55E]/10 text-[#22C55E] hover:bg-[#22C55E]/20"
                                             : user.membershipStatus === 'expired'
                                                 ? "bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444]/20"
                                                 : "bg-[#F59E0B]/10 text-[#F59E0B] hover:bg-[#F59E0B]/20"
                                     )}>
-                                        {user.membershipStatus === 'active' ? (
+                                        {session?.user.membershipStatus === MembershipStatus.ACTIVE ? (
                                             <>
                                                 <CheckCircle className="w-3 h-3 mr-1" />
                                                 Active
                                             </>
-                                        ) : user.membershipStatus === 'expired' ? (
+                                        ) : session?.user.membershipStatus === MembershipStatus.EXPIRED ? (
                                             <>
                                                 <Lock className="w-3 h-3 mr-1" />
                                                 Expired
@@ -229,15 +232,15 @@ export default function UserDashboard() {
                                 <div className="space-y-2 sm:space-y-3 w-full">
                                     <div className="flex items-center text-xs sm:text-sm">
                                         <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-[#475569] dark:text-[#94A3B8] shrink-0" />
-                                        <span className="text-[#475569] dark:text-[#94A3B8] truncate">{user.email}</span>
+                                        <span className="text-[#475569] dark:text-[#94A3B8] truncate">{session?.user.email}</span>
                                     </div>
                                     <div className="flex items-center text-xs sm:text-sm">
                                         <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-[#475569] dark:text-[#94A3B8] shrink-0" />
-                                        <span className="text-[#475569] dark:text-[#94A3B8] truncate">{user.phone}</span>
+                                        <span className="text-[#475569] dark:text-[#94A3B8] truncate">{session?.user.phone}</span>
                                     </div>
                                     <div className="flex items-center text-xs sm:text-sm">
                                         <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-[#475569] dark:text-[#94A3B8] shrink-0" />
-                                        <span className="text-[#475569] dark:text-[#94A3B8] truncate">ID: {user.studentId}</span>
+                                        <span className="text-[#475569] dark:text-[#94A3B8] truncate">ID: {session?.user.studentId}</span>
                                     </div>
                                 </div>
 
@@ -262,10 +265,10 @@ export default function UserDashboard() {
                         <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-5 lg:p-6 pt-0">
                             <div className="text-center">
                                 <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#0F172A] dark:text-[#E5E7EB] mb-1">
-                                    Level {user.level}
+                                    Level {session?.user.level}
                                 </div>
                                 <div className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8]">
-                                    {user.points} / {user.nextLevelPoints} points
+                                    {session?.user.points} / {session?.user.nextLevelPoints} points
                                 </div>
                             </div>
 
@@ -273,7 +276,7 @@ export default function UserDashboard() {
 
                             <div className="text-center">
                                 <div className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8]">
-                                    {user.nextLevelPoints - user.points} points to Level {user.level + 1}
+                                    {session?.user.nextLevelPoints - session?.user.points} points to Level {session?.user.level + 1}
                                 </div>
                             </div>
 
@@ -342,7 +345,6 @@ export default function UserDashboard() {
                         notifications={notifications}
                         setActiveTab={setActiveTab}
                         unreadNotifications={unreadNotifications}
-                        user={user}
                         userEvents={userEvents}
                     />
 
@@ -354,27 +356,27 @@ export default function UserDashboard() {
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-white dark:border-[#0F172A] shrink-0">
                                         <AvatarFallback className="bg-[#2563EB] text-white text-sm sm:text-base">
-                                            {user.name.split(' ').map(n => n[0]).join('')}
+                                            {session?.user.name.split(' ').map(n => n[0]).join('')}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                         <h2 className="font-bold text-sm sm:text-base text-[#0F172A] dark:text-[#E5E7EB] truncate">
-                                            {user.name}
+                                            {session?.user.name}
                                         </h2>
                                         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                             <Badge className={cn(
                                                 "text-[10px] sm:text-xs px-1.5 py-0",
-                                                user.membershipStatus === 'active'
+                                                session?.user.membershipStatus === MembershipStatus.ACTIVE
                                                     ? "bg-[#22C55E]/10 text-[#22C55E]"
-                                                    : user.membershipStatus === 'expired'
+                                                    : session?.user.membershipStatus === MembershipStatus.EXPIRED
                                                         ? "bg-[#EF4444]/10 text-[#EF4444]"
                                                         : "bg-[#F59E0B]/10 text-[#F59E0B]"
                                             )}>
-                                                {user.membershipStatus === 'active' ? 'Active' :
-                                                    user.membershipStatus === 'expired' ? 'Expired' : 'Pending'}
+                                                {session?.user.membershipStatus === MembershipStatus.ACTIVE ? MembershipStatus.ACTIVE :
+                                                    session?.user.membershipStatus === MembershipStatus.EXPIRED ? MembershipStatus.EXPIRED : MembershipStatus.PENDING}
                                             </Badge>
                                             <div className="text-[10px] sm:text-xs text-[#475569] dark:text-[#94A3B8]">
-                                                Level {user.level}
+                                                Level {session?.user.level}
                                             </div>
                                         </div>
                                     </div>
@@ -446,7 +448,7 @@ export default function UserDashboard() {
                         <div className="mt-3 sm:mt-4">
                             {renderMobileTabContent({
                                 activeTab,
-                                user,
+                                session,
                                 userEvents,
                                 documents,
                                 notifications,
