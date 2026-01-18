@@ -1,8 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import prisma from "@/lib/db";
-import { MembershipStatus } from "@/generated/prisma/enums";
+import { prisma } from "@/lib/db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -27,11 +26,13 @@ export const authOptions: NextAuthOptions = {
 
         console.log(user, "user is this");
 
-        if (!user) return null; // triggers 401 if user not found
+        if (!user || !user?.name) {
+          throw new Error("User not found");
+        }
 
         const isPasswordCorrect = await bcrypt.compare(
           credentials.password,
-          user.password
+          user.password,
         );
 
         if (!isPasswordCorrect) {
@@ -46,26 +47,22 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.studentId = user.studentId;
-        token.semester = user.semester;
-        token.membershipStatus = user.membershipStatus;
-        token.points = user.points;
-        token.level = user.level;
+        // Spread all user fields into token
+        return {
+          ...token,
+          ...user, // copies everything from user to token
+        };
       }
       return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.studentId = token.studentId;
-        session.user.semester = token.semester;
-        session.user.membershipStatus = token.membershipStatus;
-        session.user.points = token.points;
-        session.user.level = token.level;
+        // Spread all token fields into session.user
+        session.user = {
+          ...session.user,
+          ...token, // copies everything from token to session.user
+        };
       }
       return session;
     },

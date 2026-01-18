@@ -1,15 +1,17 @@
 import { Bell, Building, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { UserProfile } from '@/app/(protected)/dashboard/page'
+import type { Session } from "next-auth";
+import { UserRole } from '@/types/user/enums';
 
 interface HeaderProps {
-    user: UserProfile,
+    session: Session | null,
     unreadNotifications: number,
     handleLogout: () => void,
     getCurrentPageTitle: () => string
 }
 
-const Header = ({ user, unreadNotifications, handleLogout, getCurrentPageTitle }: HeaderProps) => {
+const Header = ({ session, unreadNotifications, handleLogout, getCurrentPageTitle }: HeaderProps) => {
     return (
         <header className="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm">
             <div className="px-4 sm:px-6 py-4">
@@ -20,7 +22,7 @@ const Header = ({ user, unreadNotifications, handleLogout, getCurrentPageTitle }
                             {getCurrentPageTitle()}
                         </h1>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                            Welcome back, {user.name.split(' ')[0]}!
+                            Welcome back, {session?.user?.name.split(' ')[0]}!
                         </p>
                     </div>
 
@@ -43,7 +45,7 @@ const Header = ({ user, unreadNotifications, handleLogout, getCurrentPageTitle }
                             <Settings className="w-5 h-5" />
                         </Link>
 
-                        {(user.role === 'admin' || user.role === 'super_admin') && (
+                        {(session?.user?.role === UserRole.ADMIN || session?.user.role === UserRole.SUPER_ADMIN) && (
                             <Link
                                 href="/admin"
                                 className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20"

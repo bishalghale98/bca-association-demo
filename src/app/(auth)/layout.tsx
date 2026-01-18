@@ -17,12 +17,12 @@ export default function AuthLayout({
 	children: React.ReactNode
 }) {
 	return (
-		<body className={inter.className}>
+		<main className={inter.className}>
 			<Navbar />
 
 			{children}
 			<ButtonNav />
 			<Footer />
-		</body>
+		</main>
 	)
 }

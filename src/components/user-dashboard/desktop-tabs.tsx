@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -7,12 +9,12 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Document, Notification, UserEvent, UserProfile } from '@/app/(protected)/dashboard/page';
+import { getSession, useSession } from 'next-auth/react';
 
 interface DesktopTabsProps {
     activeTab: string
     setActiveTab: (value: string) => void
 
-    user: UserProfile
 
     userEvents: UserEvent[]
     documents: Document[]
@@ -27,7 +29,6 @@ interface DesktopTabsProps {
 const DesktopTabs = ({
     activeTab,
     setActiveTab,
-    user,
     userEvents,
     documents,
     notifications,
@@ -35,6 +36,8 @@ const DesktopTabs = ({
     achievements,
     markNotificationAsRead,
 }: DesktopTabsProps) => {
+
+    const { data: session, status } = useSession()
 
     return (
         <div className="hidden lg:block">
@@ -55,7 +58,7 @@ const DesktopTabs = ({
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                                 <div>
                                     <h2 className="text-lg sm:text-2xl font-bold text-[#0F172A] dark:text-[#E5E7EB] mb-1 sm:mb-2">
-                                        Welcome back, {user.name.split(' ')[0]}! 👋
+                                        Welcome back, {session?.user.name.split(' ')[0]}! 👋
                                     </h2>
                                     <p className="text-sm sm:text-base text-[#475569] dark:text-[#94A3B8]">
                                         Here&apos;s what&apos;s happening with your membership today.
@@ -64,10 +67,16 @@ const DesktopTabs = ({
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                     <Badge variant="outline" className="border-[#2563EB] text-[#2563EB] text-xs sm:text-sm w-fit">
                                         <Shield className="w-3 h-3 mr-1" />
-                                        Member Since: {new Date(user.joinDate).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'short'
-                                        })}
+                                        <p>
+                                            Member Since:{" "}
+                                            {session?.user?.joinDate
+                                                ? new Date(session.user.joinDate).toLocaleDateString("en-US", {
+                                                    year: "numeric",
+                                                    month: "short",
+                                                })
+                                                : "N/A"}
+                                        </p>
+
                                     </Badge>
                                     <Button size="sm" className="text-xs sm:text-sm">
                                         <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />

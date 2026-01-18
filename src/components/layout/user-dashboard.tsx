@@ -7,15 +7,14 @@ import BottomNav from '../user-dashboard/bottom-nav'
 import { Bell, BookOpen, Building, Calendar, ChevronLeft, ChevronRight, FileText, LayoutDashboard, LogOut, Mail, MessageSquare, Settings, Shield, Trophy, Users } from 'lucide-react'
 import Header from '../user-dashboard/header'
 import { Notification } from '@/app/(protected)/dashboard/page'
+import { signOut, useSession } from 'next-auth/react'
 
 interface UserDashboardLayoutProps {
     children?: React.ReactNode
-
 }
 
 const UserDashboardLayout = ({
     children,
-
 }: UserDashboardLayoutProps) => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
     const pathname = usePathname()
@@ -30,7 +29,6 @@ const UserDashboardLayout = ({
         { id: 'help', label: 'Help Center', icon: Mail, href: '/help', external: true },
     ]
 
-
     const notifications: Notification[] = [
         { id: 1, title: "Event Registration Confirmed", message: "Your registration for Annual Hackathon is confirmed", type: "event", time: "2 hours ago", read: false },
         { id: 2, title: "Certificate Available", message: "Download your certificate for AI Workshop", type: "academic", time: "1 day ago", read: false },
@@ -40,26 +38,11 @@ const UserDashboardLayout = ({
 
     const unreadNotifications = notifications.filter(n => !n.read).length;
 
-    const user = {
-        id: 1,
-        name: "John Doe",
-        email: "john.doe@mmmc.edu",
-        phone: "+1 (555) 123-4567",
-        studentId: "BCA20240123",
-        course: "Bachelor of Computer Applications",
-        semester: 5,
-        role: 'member',
-        joinDate: "2023-08-15",
-        membershipStatus: 'active',
-        points: 850,
-        level: 3,
-        nextLevelPoints: 1000,
-    }
+    const { data: session, status } = useSession();
 
-    const handleLogout = () => {
-        console.log("logout logic")
+    const handleLogout = async () => {
+        await signOut()
     }
-
 
     // Find current page title based on pathname
     const getCurrentPageTitle = () => {
@@ -67,6 +50,33 @@ const UserDashboardLayout = ({
             pathname === item.href || pathname.startsWith(`${item.href}/`)
         )
         return currentItem?.label || 'Dashboard'
+    }
+
+
+    // Redirect to login if unauthenticated
+    if (status === "unauthenticated") {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A] flex items-center justify-center">
+                <div className="text-center max-w-md mx-4">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center shadow-lg">
+                        <Shield className="w-10 h-10 text-white" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">
+                        Session Expired
+                    </h1>
+                    <p className="text-slate-600 dark:text-slate-400 mb-6">
+                        Your session has expired. Please log in again to continue.
+                    </p>
+                    <Link
+                        href="/login"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        Go to Login
+                    </Link>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -165,21 +175,35 @@ const UserDashboardLayout = ({
                         </div>
                     </div>
 
-                    {/* Sidebar Footer - User Profile */}
+                    {/* Sidebar Footer - User Profile with Loading State */}
                     <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-                        <div className={`flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer ${sidebarCollapsed ? 'justify-center' : ''
-                            }`}>
-                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 text-white font-semibold text-sm shadow-md">
-                                {user.avatar}
-                            </div>
-                            {!sidebarCollapsed && (
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                                        {user.name}
-                                    </p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                        {user.email}
-                                    </p>
+                        <div className={`flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer ${sidebarCollapsed ? 'justify-center' : ''}`}>
+                            {status === "authenticated" && session ? (
+                                <>
+                                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 text-white font-semibold text-sm shadow-md">
+                                        {session.user.avatarUrl || session.user.name?.charAt(0) || 'U'}
+                                    </div>
+                                    {!sidebarCollapsed && (
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                                                {session.user.name || 'User'}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                                {session.user?.email || 'No email'}
+                                            </p>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                // Loading skeleton for user profile
+                                <div className="flex items-center gap-3 w-full">
+                                    <div className="w-9 h-9 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                                    {!sidebarCollapsed && (
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-3/4"></div>
+                                            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-1/2"></div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -204,8 +228,13 @@ const UserDashboardLayout = ({
                 className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
                     }`}
             >
-                {/* Top Header */}
-                <Header getCurrentPageTitle={getCurrentPageTitle} handleLogout={handleLogout} unreadNotifications={unreadNotifications} user={user} />
+                {/* Top Header - Pass session and status to handle loading there too */}
+                <Header
+                    getCurrentPageTitle={getCurrentPageTitle}
+                    handleLogout={handleLogout}
+                    unreadNotifications={unreadNotifications}
+                    session={session}
+                />
 
                 {/* Main Content Area */}
                 <div className="max-w-7xl mb-20 md:mb-0 mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 md:py-8">

@@ -1,13 +1,13 @@
-import prisma from "@/lib/db";
-import { UserSchema } from "@/schema/auth.schema";
+import { prisma } from "@/lib/db";
+import { RegisterUserSchema } from "@/schema/auth.schema";
 import bcrypt from "bcryptjs";
 
 class AuthController {
-  async userRegister(req: Request, res: Response) {
+  async userRegister(req: Request) {
     try {
       const body = await req.json();
 
-      const parsed = UserSchema.safeParse(body);
+      const parsed = RegisterUserSchema.safeParse(body);
 
       if (!parsed.success) {
         return Response.json(
@@ -16,13 +16,12 @@ class AuthController {
             message: "Invalid registration data",
             errors: parsed.error.issues,
           },
-          {
-            status: 400,
-          }
+          { status: 400 }
         );
       }
 
-      const { email, studentId, password, ...rest } = parsed.data;
+      const { email, studentId, password, semester, year, ...rest } =
+        parsed.data;
 
       // 🔍 Check existing user
       const existingUser = await prisma.user.findFirst({
@@ -35,11 +34,9 @@ class AuthController {
         return Response.json(
           {
             success: false,
-            message: "User already registered with this email or student ID",
+            message: "User already exists",
           },
-          {
-            status: 409,
-          }
+          { status: 409 }
         );
       }
 
@@ -52,7 +49,14 @@ class AuthController {
           email,
           studentId,
           password: hashedPassword,
+
+          semester,
+          year,
+
+          role: "MEMBER",
+          membershipStatus: "PENDING",
           joinDate: new Date(),
+
           ...rest,
         },
       });
@@ -60,26 +64,19 @@ class AuthController {
       return Response.json(
         {
           success: true,
-          message: "Registration successful. Please wait for admin approval.",
+          message: "Registration successful. Await admin approval.",
         },
-        {
-          status: 201,
-        }
+        { status: 201 }
       );
     } catch (error) {
       console.error("Register error:", error);
-
       return Response.json(
-        {
-          success: false,
-          message: "Internal server error",
-        },
-        {
-          status: 500,
-        }
+        { success: false, message: "Internal server error" },
+        { status: 500 }
       );
     }
   }
 }
+
 const authController = new AuthController();
 export default authController;

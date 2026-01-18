@@ -13,7 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model User {
   // 🔑 Core Identity
   id        String   @id @default(uuid())
@@ -28,7 +27,7 @@ model User {
   studentId      String  @unique
   course         String?
   specialization String?
-  semester       Int
+  semester       String
   year           Int?
 
   // 👤 Personal Profile
@@ -47,6 +46,11 @@ model User {
   points          Int @default(0)
   level           Int @default(1)
   nextLevelPoints Int @default(100)
+
+  // conditions
+  associationRules   Boolean
+  physicallyVerified Boolean
+  termsAccepted      Boolean
 
   // ⏱ System Timestamps
   createdAt DateTime @default(now())
@@ -70,4 +74,3 @@ enum Gender {
   FEMALE
   OTHER
 }
-

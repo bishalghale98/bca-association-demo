@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,7 +37,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useSession, signIn, signOut } from "next-auth/react"
+import { useSession, signIn } from "next-auth/react"
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 
 // Define form schema with Zod
@@ -67,10 +69,10 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const router = useRouter()
 
-  // Initialize form with react-hook-form
+  const [loginTransition, startLoginTransition] = useTransition()
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -80,30 +82,37 @@ export default function LoginPage() {
     },
   });
 
+
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    setLoginError(null);
+    startLoginTransition(async () => {
+      try {
+        const res = await signIn("credentials", {
+          redirect: false,
+          email: data.email,
+          password: data.password,
+        });
 
-    console.log(data)
+        if (!res) {
+          toast.error("Something went wrong");
+          return;
+        }
 
-    // Simulate API call
-    try {
-      const res = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      })
+        if (res.error) {
+          toast.error(res.error);
+          return;
+        }
 
-      if (res?.error) {
-        console.error("Error while login")
+        if (res.ok) {
+          toast.success("Login successful");
+          router.push('/dashboard')
+          router.refresh(); // ✅ refresh only on success
+        }
+      } catch (error) {
+        toast.error("Failed to login");
       }
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setIsLoading(false)
-
-    }
+    });
   };
+
 
   const features = [
     {
@@ -315,15 +324,7 @@ export default function LoginPage() {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <CardContent className="space-y-4 px-4 sm:px-6">
-                    {/* Error Alert */}
-                    {loginError && (
-                      <Alert variant="destructive" className="bg-[#EF4444]/10 border-[#EF4444]">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription className="text-sm">
-                          {loginError}
-                        </AlertDescription>
-                      </Alert>
-                    )}
+
 
                     {/* Email/Student ID Field */}
                     <FormField
@@ -348,7 +349,7 @@ export default function LoginPage() {
                                   "focus:border-[#2563EB] dark:focus:border-[#38BDF8]",
                                   form.formState.errors.email && "border-[#EF4444] focus:border-[#EF4444]"
                                 )}
-                                disabled={isLoading}
+                                disabled={loginTransition}
                                 {...field}
                               />
                             </div>
@@ -390,7 +391,7 @@ export default function LoginPage() {
                                   "focus:border-[#2563EB] dark:focus:border-[#38BDF8]",
                                   form.formState.errors.password && "border-[#EF4444] focus:border-[#EF4444]"
                                 )}
-                                disabled={isLoading}
+                                disabled={loginTransition}
                                 {...field}
                               />
                               <Button
@@ -399,7 +400,7 @@ export default function LoginPage() {
                                 size="icon"
                                 className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                                 onClick={() => setShowPassword(!showPassword)}
-                                disabled={isLoading}
+                                disabled={loginTransition}
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                               >
                                 {showPassword ? (
@@ -432,7 +433,7 @@ export default function LoginPage() {
                                     "data-[state=checked]:bg-[#2563EB] data-[state=checked]:border-[#2563EB]",
                                     "dark:data-[state=checked]:bg-[#3B82F6] dark:data-[state=checked]:border-[#3B82F6]"
                                   )}
-                                  disabled={isLoading}
+                                  disabled={loginTransition}
                                 />
                               </FormControl>
                               <FormLabel className={cn(
@@ -466,11 +467,11 @@ export default function LoginPage() {
                         "dark:from-[#2563EB] dark:to-[#3B82F6]",
                         "shadow-lg hover:shadow-xl",
                         "transition-all duration-300 transform hover:-translate-y-0.5",
-                        isLoading && "opacity-80 cursor-not-allowed"
+                        loginTransition && "opacity-80 cursor-not-allowed"
                       )}
-                      disabled={isLoading}
+                      disabled={loginTransition}
                     >
-                      {isLoading ? (
+                      {loginTransition ? (
                         <>
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                           Authenticating...
@@ -513,7 +514,7 @@ export default function LoginPage() {
                           "text-[#0F172A] dark:text-[#E5E7EB]",
                           "transition-all duration-300"
                         )}
-                        disabled={isLoading}
+                        disabled={loginTransition}
                       >
                         <UserPlus className="mr-2 h-5 w-5" />
                         Register as Association Member
