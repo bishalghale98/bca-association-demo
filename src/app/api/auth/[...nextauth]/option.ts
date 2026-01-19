@@ -14,8 +14,6 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        console.log(credentials, "credentials is this");
-
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password are required");
         }
@@ -23,8 +21,6 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
-
-        console.log(user, "user is this");
 
         if (!user || !user?.name) {
           throw new Error("User not found");
@@ -45,14 +41,17 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        // Spread all user fields into token
-        return {
-          ...token,
-          ...user, // copies everything from user to token
-        };
+        // @ts-expect-error User object has password property that needs to be excluded
+        const { password, ...safeUser } = user;
+        return { ...token, ...safeUser };
       }
+
+      if (trigger === "update" && session?.user) {
+        return { ...token, ...session.user };
+      }
+
       return token;
     },
 
@@ -61,7 +60,7 @@ export const authOptions: NextAuthOptions = {
         // Spread all token fields into session.user
         session.user = {
           ...session.user,
-          ...token, // copies everything from token to session.user
+          ...token,
         };
       }
       return session;

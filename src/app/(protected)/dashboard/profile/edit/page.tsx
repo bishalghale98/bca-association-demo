@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +43,9 @@ import { api } from '@/lib/api';
 
 // Define validation schema
 const profileFormSchema = z.object({
+    // Avatar (optional file)
+    avatar: z.instanceof(File).optional().nullable(),
+
     // Contact Information
     phone: z.string().optional().nullable(),
     bio: z.string().max(500, "Bio must be less than 500 characters").optional().nullable(),
@@ -70,28 +73,46 @@ const EditProfilePage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-    // Initialize form with default values (will be updated when session loads)
+    // Initialize form with default values
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
-            phone: '',
-            bio: '',
-            course: '',
-            specialization: '',
-            semester: '',
-            dateOfBirth: '',
+            avatar: null,
+            phone: session?.user.phone || '',
+            bio: session?.user.bio || '',
+            course: session?.user.course || '',
+            specialization: session?.user.specialization || '',
+            semester: session?.user.semester || '',
+            dateOfBirth: session?.user.dateOfBirth
+                ? new Date(session.user.dateOfBirth).toISOString().split('T')[0]
+                : '',
             gender: session?.user.gender,
-            address: '',
+            address: session?.user.address || '',
             bloodGroup: session?.user.bloodGroup || '',
-            emergencyContact: '',
+            emergencyContact: session?.user.emergencyContact || '',
         },
         mode: 'onChange',
     });
 
+    // Watch the avatar field for changes
+    const watchedAvatar = form.watch('avatar');
+
+    // Update preview when avatar changes
+    React.useEffect(() => {
+        if (watchedAvatar && watchedAvatar instanceof File) {
+            const previewUrl = URL.createObjectURL(watchedAvatar);
+            setAvatarPreview(previewUrl);
+            // Clean up the object URL when component unmounts or when avatar changes
+            return () => URL.revokeObjectURL(previewUrl);
+        } else if (session?.user?.avatarUrl) {
+            setAvatarPreview(session.user.avatarUrl);
+        }
+    }, [watchedAvatar, session?.user?.avatarUrl]);
+
     // Show loading state while session is loading
     if (status === 'loading') {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+            <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
                 <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
                     <div className="flex items-center justify-center h-64">
                         <div className="text-center">
@@ -107,7 +128,7 @@ const EditProfilePage = () => {
     // Redirect or show error if no session
     if (!session?.user) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+            <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
                 <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
                     <div className="text-center py-16">
                         <h2 className="text-xl font-bold text-[#0F172A] dark:text-[#E5E7EB] mb-2">
@@ -130,55 +151,48 @@ const EditProfilePage = () => {
     const user = session.user;
     const progressPercentage = (user.points / user.nextLevelPoints) * 100;
 
-
-
-    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("File size should be less than 5MB");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarPreview(reader.result as string);
-                // In a real app, you would upload the file to your server here
-                toast.success("Profile picture updated! Don't forget to save your changes.");
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const onSubmit = async (data: ProfileFormValues) => {
         setIsSubmitting(true);
+
         try {
-            // Prepare data for API call
-            const updateData = {
-                ...data,
-                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-            };
+            // Create FormData to handle file upload
+            const formData = new FormData();
 
-            // Call your API endpoint to update the user
-            const res = await api.patch("/user/profile", updateData)
-
-            console.log(res)
-
-            if (res.data.success) {
-                toast.success(res.data.message)
+            // Add avatar file if exists
+            if (data.avatar && data.avatar instanceof File) {
+                formData.append('avatarUrl', data.avatar);
             }
 
-            // Update session data
-            await update({
-                ...session,
-                user: {
-                    ...session.user,
-                    ...data,
-                    avatarUrl: avatarPreview || session.user.avatarUrl,
-                }
-            });
+            // Add other form data
+            const otherData = {
+                phone: data.phone,
+                bio: data.bio,
+                course: data.course,
+                specialization: data.specialization,
+                semester: data.semester,
+                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+                gender: data.gender,
+                address: data.address,
+                bloodGroup: data.bloodGroup,
+                emergencyContact: data.emergencyContact,
+            };
 
-            router.push('/dashboard/profile');
+            // Append JSON data for non-file fields
+            formData.append('data', JSON.stringify(otherData));
+
+
+            const res = await api.patch("/user/profile", formData);
+
+            if (res.data.success) {
+                toast.success(res.data.message);
+
+                await update({ user: { ...session.user, ...res.data.data } });
+
+
+                router.push('/dashboard/profile');
+            } else {
+                toast.error(res.data.message || "Failed to update profile");
+            }
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error("Failed to update profile. Please try again.");
@@ -192,7 +206,7 @@ const EditProfilePage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+        <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
             <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
                 {/* Header */}
                 <div className="mb-6 sm:mb-8">
@@ -206,7 +220,7 @@ const EditProfilePage = () => {
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                            <Link href="/profile" className="flex-1 sm:flex-none">
+                            <Link href="/dashboard/profile" className="flex-1 sm:flex-none">
                                 <Button variant="outline" className="w-full text-xs sm:text-sm">
                                     <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                     Cancel
@@ -223,25 +237,58 @@ const EditProfilePage = () => {
                             <CardContent className="p-4 sm:p-6">
                                 <div className="flex flex-col md:flex-row items-center md:items-start gap-4 sm:gap-6">
                                     {/* Avatar Section */}
-                                    <div className="relative">
-                                        <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-white dark:border-[#0F172A] shadow-lg">
-                                            <AvatarImage src={avatarPreview || user.avatarUrl || ''} />
-                                            <AvatarFallback className="bg-[#2563EB] text-white text-xl sm:text-2xl">
-                                                {user.name.split(' ').map(n => n[0]).join('')}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <label className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 cursor-pointer">
-                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#2563EB] flex items-center justify-center hover:bg-[#1D4ED8] transition-colors">
-                                                <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                                            </div>
-                                            <input
-                                                type="file"
-                                                className="hidden"
-                                                accept="image/*"
-                                                onChange={handleAvatarUpload}
-                                            />
-                                        </label>
-                                    </div>
+                                    <FormField
+                                        control={form.control}
+                                        name="avatar"
+                                        render={({ field: { onChange, value, ...field } }) => (
+                                            <FormItem className="relative">
+                                                <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-white dark:border-[#0F172A] shadow-lg">
+                                                    <AvatarImage src={avatarPreview || user.avatarUrl || ''} />
+                                                    <AvatarFallback className="bg-[#2563EB] text-white text-xl sm:text-2xl">
+                                                        {user.name.split(' ').map(n => n[0]).join('')}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <label className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 cursor-pointer">
+                                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#2563EB] flex items-center justify-center hover:bg-[#1D4ED8] transition-colors">
+                                                        <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                                                    </div>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                            onChange={(e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (file) {
+                                                                    // Validate file size (5MB limit)
+                                                                    if (file.size > 5 * 1024 * 1024) {
+                                                                        toast.error("File size should be less than 5MB");
+                                                                        return;
+                                                                    }
+                                                                    // Validate file type
+                                                                    if (!file.type.startsWith('image/')) {
+                                                                        toast.error("Please select an image file");
+                                                                        return;
+                                                                    }
+                                                                    onChange(file);
+                                                                }
+                                                            }}
+                                                            {...field}
+                                                            value={value?.filename || ''}
+                                                        />
+                                                    </FormControl>
+                                                </label>
+                                                {isSubmitting && (
+                                                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+                                                        <span className="text-white text-sm animate-pulse">
+                                                            Uploading...
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     {/* Profile Info */}
                                     <div className="flex-1">
@@ -285,7 +332,7 @@ const EditProfilePage = () => {
                                                     <FormControl>
                                                         <Textarea
                                                             placeholder="Tell us about yourself..."
-                                                            className="resize-none min-h-[100px] text-sm sm:text-base"
+                                                            className="resize-none min-h-25 text-sm sm:text-base"
                                                             {...field}
                                                             value={field.value || ''}
                                                         />
@@ -574,7 +621,7 @@ const EditProfilePage = () => {
                                                 <FormControl>
                                                     <Textarea
                                                         placeholder="Enter your address"
-                                                        className="text-sm sm:text-base min-h-[80px]"
+                                                        className="text-sm sm:text-base min-h-20"
                                                         {...field}
                                                         value={field.value || ''}
                                                     />
@@ -656,24 +703,26 @@ const EditProfilePage = () => {
                                                     <Hash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                     Current Semester
                                                 </FormLabel>
-                                                <Select
-                                                    onValueChange={field.onChange}
-                                                    defaultValue={field.value || ''}
-                                                    value={field.value || ''}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger className="text-sm sm:text-base">
-                                                            <SelectValue placeholder="Select semester" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                                                            <SelectItem key={sem} value={sem.toString()}>
-                                                                Semester {sem}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                <FormControl>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value || ''}
+                                                        value={field.value || ''}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="text-sm sm:text-base">
+                                                                <SelectValue placeholder="Select semester" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                                                                <SelectItem key={sem} value={sem.toString()}>
+                                                                    Semester {sem}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -713,7 +762,7 @@ const EditProfilePage = () => {
                                                     />
                                                 </FormControl>
                                                 <FormDescription className="text-xs">
-                                                    Include name and relationship (e.g., "John Doe - Father")
+                                                    Include name and relationship (e.g., &quot;John Doe - Father&quot;)
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
@@ -756,7 +805,7 @@ const EditProfilePage = () => {
                     </form>
                 </Form>
             </div>
-        </div>
+        </div >
     );
 };
 
