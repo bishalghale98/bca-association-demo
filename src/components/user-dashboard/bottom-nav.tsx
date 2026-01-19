@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Home, Users, FileText, MoreVertical, User, Settings, HelpCircle, Globe, ChevronUp } from 'lucide-react'
+import { Home, Users, FileText, MoreVertical, User, Settings, HelpCircle, Globe, ChevronUp, HomeIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -41,6 +41,11 @@ const BottomNav = () => {
             href: '/community',
             icon: Globe,
         },
+        {
+            name: "Public Page",
+            href: "/",
+            icon: HomeIcon
+        }
     ]
 
     const isActive = (path: string) => {

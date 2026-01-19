@@ -4,14 +4,13 @@ import { cn } from "@/lib/utils";
 import {
     GraduationCap,
     LogIn,
-    Menu,
     UserPlus,
-    X,
     Home,
     Info,
     Calendar,
     Bell,
     Phone,
+    LayoutDashboardIcon,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -21,14 +20,19 @@ import {
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 function Navbar() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const pathname = usePathname();
 
+    const { data: session , status} = useSession()
+
+    
+
     const isActive = (path: string) => pathname === path;
 
+    
     // Handle scroll effect for navbar
     useEffect(() => {
         const handleScroll = () => {
@@ -47,6 +51,8 @@ function Navbar() {
         { name: "Notices", path: "/notices", icon: Bell },
         { name: "Contact", path: "/contact", icon: Phone },
     ];
+
+    
 
     return (
         <nav
@@ -98,34 +104,49 @@ function Navbar() {
                         </NavigationMenu>
                     </div>
 
-                   
+
 
                     {/* Auth Buttons */}
-                    <div className="hidden sm:flex items-center space-x-2 md:space-x-3 lg:space-x-4">
-                        <Link href="/login">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 sm:h-10 sm:px-4 lg:h-11 lg:px-6 text-xs sm:text-sm lg:text-base"
-                            >
-                                <LogIn className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden xs:inline">Login</span>
-                            </Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button
-                                className="bg-gradient-to-r from-[#2563EB] to-[#38BDF8] hover:from-[#1D4ED8] hover:to-[#0EA5E9] h-9 px-3 sm:h-10 sm:px-4 lg:h-11 lg:px-6 text-xs sm:text-sm lg:text-base"
-                            >
-                                <UserPlus className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden xs:inline">Register</span>
-                            </Button>
-                        </Link>
-                    </div>
+                    {!session?.user ? (
+                        <div className="hidden sm:flex items-center space-x-2 md:space-x-3 lg:space-x-4">
+                            <Link href="/login">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 px-3 sm:h-10 sm:px-4 lg:h-11 lg:px-6 text-xs sm:text-sm lg:text-base"
+                                >
+                                    <LogIn className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span className="hidden xs:inline">Login</span>
+                                </Button>
+                            </Link>
+                            <Link href="/register">
+                                <Button
+                                    className="bg-gradient-to-r from-[#2563EB] to-[#38BDF8] hover:from-[#1D4ED8] hover:to-[#0EA5E9] h-9 px-3 sm:h-10 sm:px-4 lg:h-11 lg:px-6 text-xs sm:text-sm lg:text-base"
+                                >
+                                    <UserPlus className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span className="hidden xs:inline">Register</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="hidden sm:flex items-center space-x-2 md:space-x-3 lg:space-x-4">
+                            <Link href="/dashboard">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 px-3 sm:h-10 sm:px-4 lg:h-11 lg:px-6 text-xs sm:text-sm lg:text-base"
+                                >
+                                    <LayoutDashboardIcon className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span className="hidden lg:inline">Dashboard</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    )}
 
-                  
+
                 </div>
 
-               
+
             </div>
         </nav>
     );

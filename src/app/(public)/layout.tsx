@@ -17,13 +17,13 @@ export default function PublicLayout({
 	children: React.ReactNode
 }) {
 	return (
-			<body className={inter.className}>
+		<main className={inter.className}>
 
-				<Navbar />
+			<Navbar />
 
-				{children}
-				<ButtonNav />
-				<Footer />
-			</body>
+			{children}
+			<ButtonNav />
+			<Footer />
+		</main>
 	)
 }
