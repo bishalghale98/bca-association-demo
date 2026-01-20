@@ -157,10 +157,34 @@ const AdminEventPage = () => {
                                 )}
                             />
 
+
+                            {/* event type */}
+                            <FormField
+                                control={form.control}
+                                name="type"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Event Type</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Hackthon , seminar , workshop"
+                                                {...field}
+                                                disabled={isSubmitting}
+                                                value={field.value || ''}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            What kind of event is this?
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             {/* Note about date selection */}
                             <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
                                 <div className="flex items-start gap-2">
-                                    <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
                                     <p className="text-sm text-blue-700">
                                         <span className="font-medium">Note:</span> For single-day events, use the Event Date field. For multi-day events, use both Start Date and End Date fields.
                                     </p>
@@ -378,7 +402,7 @@ const AdminEventPage = () => {
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="min-w-[100px]"
+                                    className="min-w-25"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -399,23 +423,23 @@ const AdminEventPage = () => {
                     <h3 className="font-semibold mb-2">Tips for creating events:</h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                         <li className="flex items-start">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 shrink-0" />
                             Use clear, descriptive titles that explain the event purpose
                         </li>
                         <li className="flex items-start">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 shrink-0" />
                             Include all necessary details in the description
                         </li>
                         <li className="flex items-start">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 shrink-0" />
                             Specify if the event is virtual or in-person
                         </li>
                         <li className="flex items-start">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 shrink-0" />
                             <span className="font-medium">Date Selection:</span> For single-day events, use Event Date. For multi-day events, use both Start Date and End Date.
                         </li>
                         <li className="flex items-start">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 flex-shrink-0" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 mr-2 shrink-0" />
                             Set the event date and time accurately for all time zones
                         </li>
                     </ul>

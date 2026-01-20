@@ -84,6 +84,8 @@ model Event {
   description String?
   location    String?
 
+  type String?
+
   eventDate DateTime?
 
   startDate DateTime? // optional, multi-day

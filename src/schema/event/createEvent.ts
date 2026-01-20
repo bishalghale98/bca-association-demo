@@ -18,6 +18,8 @@ export const eventFormSchema = z
       .max(200, { message: "Location must not exceed 200 characters." })
       .optional(),
 
+    type: z.string().optional(),
+
     // Single-day event date (optional if using start/end)
     eventDate: z.date().optional(),
 
@@ -90,6 +92,8 @@ export const eventApiSchema = z
       .string()
       .max(200, "Location must not exceed 200 characters.")
       .optional(),
+
+    type: z.string().optional(),
 
     // Single-day event (optional if using start/end)
     eventDate: z

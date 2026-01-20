@@ -42,6 +42,7 @@ export interface IEvent {
   title: string;
   description: string | null;
   location: string | null;
+  type: string | null;
   eventDate?: string; // ISO string from API
   endDate?: string;
   startDate?: string;
@@ -62,7 +63,7 @@ interface IAuthState {
   error: string | null;
   event: IEvent | null;
   events: IEvent[] | null;
-  loading:boolean
+  loading: boolean;
 }
 
 const initialState: IAuthState = {
@@ -81,7 +82,7 @@ const eventSlice = createSlice({
       state.status = Status.IDLE;
       state.error = null;
       state.event = null;
-      state.loading = false
+      state.loading = false;
     },
 
     startCreateEvent(state) {
@@ -101,20 +102,20 @@ const eventSlice = createSlice({
 
     startFetchEvent(state) {
       state.status = Status.LOADING;
-      state.loading = true
+      state.loading = true;
     },
 
     successFetchEvent(state, action) {
       state.status = Status.SUCCESS;
       state.error = null;
       state.events = action.payload;
-      state.loading = false
+      state.loading = false;
     },
 
     failureFetchEvent(state, action) {
       state.status = Status.ERROR;
       state.error = action.payload;
-      state.loading =false
+      state.loading = false;
     },
   },
 });

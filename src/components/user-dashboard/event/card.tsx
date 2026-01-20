@@ -2,10 +2,9 @@
 import { IEvent } from '@/store/event/eventSlice';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-    CalendarIcon,
     MapPinIcon,
     ClockIcon,
     CalendarDaysIcon,
@@ -14,18 +13,8 @@ import {
     CalendarRangeIcon,
     ChevronRightIcon,
     ExternalLinkIcon,
-    MoreVerticalIcon,
-    EditIcon,
-    TrashIcon,
     UsersIcon,
-    EyeIcon
 } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface EventCardProps {
     event: IEvent;
@@ -133,12 +122,12 @@ const EventCard: React.FC<EventCardProps> = ({
     if (viewMode === 'list') {
         return (
             <Card
-                className={`group relative overflow-hidden border-0 rounded-lg hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-background to-secondary/5 ${className}`}
+                className={`group relative overflow-hidden border-0 rounded-lg hover:shadow-lg transition-all duration-300 bg-linear-to-br from-background to-secondary/5 ${className}`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                {/* Animated background gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent transition-all duration-700 ${isHovered ? 'translate-x-full' : '-translate-x-full'}`} />
+                {/* Animated background linear */}
+                <div className={`absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent transition-all duration-700 ${isHovered ? 'translate-x-full' : '-translate-x-full'}`} />
 
                 <div className="relative p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -159,6 +148,14 @@ const EventCard: React.FC<EventCardProps> = ({
                                         <Badge variant={getEventStatus().variant} className="text-xs">
                                             {getEventStatus().label}
                                         </Badge>
+
+                                        {
+                                            event.type && (
+                                                <Badge className="text-xs mr-2">
+                                                    {event.type}
+                                                </Badge>
+                                            )
+                                        }
                                         {registrationsCount > 0 && (
                                             <Badge variant="outline" className="text-xs">
                                                 <UsersIcon className="h-3 w-3 mr-1" />
@@ -192,7 +189,7 @@ const EventCard: React.FC<EventCardProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         {/* Date/Time Info */}
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                            <CalendarClockIcon className="h-5 w-5 text-primary flex-shrink-0" />
+                            <CalendarClockIcon className="h-5 w-5 text-primary shrink-0" />
                             <div className="flex-1">
                                 <p className="text-xs text-muted-foreground">When</p>
                                 <p className="text-sm font-medium">
@@ -207,7 +204,7 @@ const EventCard: React.FC<EventCardProps> = ({
                         {/* Location Info */}
                         {event.location && (
                             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                                <MapPinIcon className="h-5 w-5 text-primary flex-shrink-0" />
+                                <MapPinIcon className="h-5 w-5 text-primary shrink-0" />
                                 <div className="flex-1">
                                     <p className="text-xs text-muted-foreground">Where</p>
                                     <p className="text-sm font-medium truncate">{event.location}</p>
@@ -217,7 +214,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
                         {/* Duration Info */}
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                            <ClockIcon className="h-5 w-5 text-primary flex-shrink-0" />
+                            <ClockIcon className="h-5 w-5 text-primary shrink-0" />
                             <div className="flex-1">
                                 <p className="text-xs text-muted-foreground">Duration</p>
                                 <p className="text-sm font-medium">
@@ -258,7 +255,7 @@ const EventCard: React.FC<EventCardProps> = ({
     // Grid View (Default)
     return (
         <Card
-            className={`group relative overflow-hidden border-0 rounded-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-b from-background to-secondary/10 hover:to-primary/5 ${className}`}
+            className={`group relative overflow-hidden border-0 rounded-xl hover:shadow-2xl transition-all duration-500 bg-linear-to-b from-background to-secondary/10 hover:to-primary/5 ${className}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -270,6 +267,16 @@ const EventCard: React.FC<EventCardProps> = ({
                 >
                     {getEventStatus().label}
                 </Badge>
+
+                {
+                    event.type && (
+                        <Badge
+                            className={`rounded-full px-3 py-1 font-medium backdrop-blur-sm transition-all duration-300`}
+                        >
+                            {event?.type}
+                        </Badge>
+                    )
+                }
             </div>
 
             {/* Event Type indicator */}
@@ -304,7 +311,7 @@ const EventCard: React.FC<EventCardProps> = ({
                 <div className="space-y-3 mb-6">
                     {/* Date/Time */}
                     <div className="flex items-center gap-3">
-                        <CalendarClockIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                        <CalendarClockIcon className="h-4 w-4 text-primary shrink-0" />
                         <div className="flex-1">
                             <p className="text-xs text-muted-foreground">Date & Time</p>
                             <p className="text-sm font-medium truncate text-wrap">
@@ -319,7 +326,7 @@ const EventCard: React.FC<EventCardProps> = ({
                     {/* Location */}
                     {event.location && (
                         <div className="flex items-center gap-3">
-                            <MapPinIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                            <MapPinIcon className="h-4 w-4 text-primary shrink-0" />
                             <div className="flex-1">
                                 <p className="text-xs text-muted-foreground">Location</p>
                                 <p className="text-sm font-medium truncate">{event.location}</p>
@@ -329,7 +336,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
                     {/* Duration */}
                     <div className="flex items-center gap-3">
-                        <ClockIcon className="h-4 w-4 text-primary flex-shrink-0" />
+                        <ClockIcon className="h-4 w-4 text-primary shrink-0" />
                         <div className="flex-1">
                             <p className="text-xs text-muted-foreground">Duration</p>
                             <p className="text-sm font-medium">
@@ -382,7 +389,7 @@ const EventCard: React.FC<EventCardProps> = ({
             </div>
 
             {/* Hover effect overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
+            <div className={`absolute inset-0 bg-linear-to-t from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
         </Card>
     );
 };

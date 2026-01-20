@@ -93,21 +93,7 @@ export default function UserDashboard() {
     const dispatch = useAppDispatch()
     const { events } = useAppSelector((store) => store.event)
 
-    const [user, setUser] = useState<UserProfile>({
-        id: 1,
-        name: "John Doe",
-        email: "john.doe@mmmc.edu",
-        phone: "+1 (555) 123-4567",
-        studentId: "BCA20240123",
-        course: "Bachelor of Computer Applications",
-        semester: 5,
-        role: 'member',
-        joinDate: "2023-08-15",
-        membershipStatus: 'active',
-        points: 850,
-        level: 3,
-        nextLevelPoints: 1000,
-    });
+
 
     const { data: session } = useSession()
 
@@ -212,7 +198,7 @@ export default function UserDashboard() {
                                         "mt-2 text-xs sm:text-sm",
                                         session?.user.membershipStatus === MembershipStatus.ACTIVE
                                             ? "bg-[#22C55E]/10 text-[#22C55E] hover:bg-[#22C55E]/20"
-                                            : user.membershipStatus === 'expired'
+                                            : session?.user.membershipStatus === MembershipStatus.EXPIRED
                                                 ? "bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444]/20"
                                                 : "bg-[#F59E0B]/10 text-[#F59E0B] hover:bg-[#F59E0B]/20"
                                     )}>

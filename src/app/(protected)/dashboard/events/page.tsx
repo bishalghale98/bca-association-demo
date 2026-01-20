@@ -1,9 +1,9 @@
 'use client'
 
 import EventCard from '@/components/user-dashboard/event/card'
-import { getAllEvents } from '@/store/event/eventSlice'
+import { getAllEvents, IEvent } from '@/store/event/eventSlice'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
     Search,
     Calendar,
@@ -13,16 +13,13 @@ import {
     ChevronRight,
     TrendingUp,
     Clock,
-    MapPin,
     Users,
     CalendarDays,
     RefreshCw,
-    Grid3x3,
-    List
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -32,29 +29,25 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import MobileSortDropdown from '@/components/user-dashboard/event/mobile-sort-dropdown'
+import ViewToggleButtons from '@/components/user-dashboard/event/view-toggle-buttons'
 
 // Helper functions for date calculations
-const isPastEvent = (event: any) => {
+const isPastEvent = (event: IEvent) => {
     const now = new Date();
     const endDate = event.endDate ? new Date(event.endDate) :
         event.eventDate ? new Date(event.eventDate) : new Date();
     return endDate < now;
 };
 
-const isUpcomingEvent = (event: any) => {
+const isUpcomingEvent = (event: IEvent) => {
     const now = new Date();
     const startDate = event.startDate ? new Date(event.startDate) :
         event.eventDate ? new Date(event.eventDate) : new Date();
     return startDate > now;
 };
 
-const getEventStatus = (event: any) => {
+const getEventStatus = (event: IEvent) => {
     if (isPastEvent(event)) return {
         label: 'Past',
         variant: 'outline' as const,
@@ -119,8 +112,8 @@ const EventShowingPage = () => {
     // Sort events
     const sortedEvents = [...(filteredEvents || [])].sort((a, b) => {
         if (sortBy === 'date') {
-            const dateA = a.startDate ? new Date(a.startDate) : new Date(a.eventDate)
-            const dateB = b.startDate ? new Date(b.startDate) : new Date(b.eventDate)
+            const dateA = a.startDate ? new Date(a.startDate) : new Date(a.eventDate as string)
+            const dateB = b.startDate ? new Date(b.startDate) : new Date(b.eventDate as string)
             return dateA.getTime() - dateB.getTime()
         }
         if (sortBy === 'title') {
@@ -138,90 +131,51 @@ const EventShowingPage = () => {
         return status.label === 'Live Now'
     }).length || 0
 
-    // Mobile Toggle View Buttons
-    const ViewToggleButtons = () => (
-        <div className="flex items-center gap-1 p-1 bg-muted/30 rounded-lg sm:hidden">
-            <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="h-8 px-3 rounded-md"
-            >
-                <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="h-8 px-3 rounded-md"
-            >
-                <List className="h-4 w-4" />
-            </Button>
-        </div>
-    )
 
-    // Mobile Sort Dropdown
-    const MobileSortDropdown = () => (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="sm:hidden rounded-full">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Sort
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSortBy('date')}>
-                    Sort by Date
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy('title')}>
-                    Sort by Title
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
+    const EventCardSkeleton = () => {
 
-    // Skeleton loader component
-    const EventCardSkeleton = () => (
-        <Card className="overflow-hidden border-0 rounded-xl bg-gradient-to-b from-background to-secondary/10 animate-pulse">
-            <div className="p-5 pt-16">
-                <div className="mb-4">
-                    <div className="h-7 bg-muted rounded w-3/4 mb-2"></div>
-                    <div className="h-1 bg-muted rounded w-16"></div>
-                </div>
-                <div className="space-y-2 mb-6">
-                    <div className="h-4 bg-muted rounded"></div>
-                    <div className="h-4 bg-muted rounded w-5/6"></div>
-                </div>
-                <div className="space-y-3 mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="h-4 w-4 bg-muted rounded"></div>
-                        <div className="flex-1 space-y-1">
-                            <div className="h-3 bg-muted rounded w-16"></div>
-                            <div className="h-4 bg-muted rounded w-32"></div>
+        return (
+            <Card className="overflow-hidden border-0 rounded-xl bg-linear-to-b from-background to-secondary/10 animate-pulse">
+                <div className="p-5 pt-16">
+                    <div className="mb-4">
+                        <div className="h-7 bg-muted rounded w-3/4 mb-2"></div>
+                        <div className="h-1 bg-muted rounded w-16"></div>
+                    </div>
+                    <div className="space-y-2 mb-6">
+                        <div className="h-4 bg-muted rounded"></div>
+                        <div className="h-4 bg-muted rounded w-5/6"></div>
+                    </div>
+                    <div className="space-y-3 mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="h-4 w-4 bg-muted rounded"></div>
+                            <div className="flex-1 space-y-1">
+                                <div className="h-3 bg-muted rounded w-16"></div>
+                                <div className="h-4 bg-muted rounded w-32"></div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="h-4 w-4 bg-muted rounded"></div>
+                            <div className="flex-1 space-y-1">
+                                <div className="h-3 bg-muted rounded w-16"></div>
+                                <div className="h-4 bg-muted rounded w-40"></div>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="h-4 w-4 bg-muted rounded"></div>
-                        <div className="flex-1 space-y-1">
-                            <div className="h-3 bg-muted rounded w-16"></div>
-                            <div className="h-4 bg-muted rounded w-40"></div>
+                    <div className="pt-5 border-t border-border/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="h-3 bg-muted rounded w-24"></div>
+                            <div className="h-6 bg-muted rounded w-16"></div>
                         </div>
+                        <div className="h-10 bg-muted rounded"></div>
                     </div>
                 </div>
-                <div className="pt-5 border-t border-border/50">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="h-3 bg-muted rounded w-24"></div>
-                        <div className="h-6 bg-muted rounded w-16"></div>
-                    </div>
-                    <div className="h-10 bg-muted rounded"></div>
-                </div>
-            </div>
-        </Card>
-    )
+            </Card>
+        )
+    }
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-linear-to-b from-background to-secondary/10 flex items-center justify-center p-4">
                 <div className="text-center max-w-md">
                     <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
                         <AlertCircle className="h-10 w-10 text-destructive" />
@@ -251,7 +205,7 @@ const EventShowingPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/5">
+        <div className="min-h-screen bg-linear-to-b from-background via-background to-secondary/5">
             {/* Header Section */}
             <div className="backdrop-blur-lg bg-background/80 border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -261,7 +215,7 @@ const EventShowingPage = () => {
                                 <div className="p-2 rounded-lg bg-primary/10">
                                     <CalendarDays className="h-6 w-6 text-primary" />
                                 </div>
-                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                                     Discover Events
                                 </h1>
                             </div>
@@ -294,13 +248,13 @@ const EventShowingPage = () => {
                                     <SelectItem value="list">List View</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <ViewToggleButtons />
+                            <ViewToggleButtons setViewMode={setViewMode} viewMode={viewMode} />
                         </div>
                     </div>
 
                     {/* Stats Cards */}
                     <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                        <Card className="border-0 bg-gradient-to-br from-primary/5 to-primary/10">
+                        <Card className="border-0 bg-linear-to-br from-primary/5 to-primary/10">
                             <CardContent className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -312,7 +266,7 @@ const EventShowingPage = () => {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 bg-gradient-to-br from-green-500/5 to-green-500/10">
+                        <Card className="border-0 bg-linear-to-br from-green-500/5 to-green-500/10">
                             <CardContent className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -324,7 +278,7 @@ const EventShowingPage = () => {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 bg-gradient-to-br from-blue-500/5 to-blue-500/10">
+                        <Card className="border-0 bg-linear-to-br from-blue-500/5 to-blue-500/10">
                             <CardContent className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -336,7 +290,7 @@ const EventShowingPage = () => {
                             </CardContent>
                         </Card>
 
-                        <Card className="border-0 bg-gradient-to-br from-purple-500/5 to-purple-500/10">
+                        <Card className="border-0 bg-linear-to-br from-purple-500/5 to-purple-500/10">
                             <CardContent className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -377,7 +331,7 @@ const EventShowingPage = () => {
                                 </SelectContent>
                             </Select>
 
-                            <MobileSortDropdown />
+                            <MobileSortDropdown setSortBy={setSortBy} />
 
                             <Button variant="outline" size="icon" className="rounded-full hidden sm:inline-flex">
                                 <Filter className="h-4 w-4" />
@@ -388,25 +342,25 @@ const EventShowingPage = () => {
                     {/* Tabs */}
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="inline-flex flex-wrap h-auto p-1 bg-muted/50 rounded-full w-full sm:w-auto">
-                            <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-[100px] sm:min-w-0">
+                            <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-25 sm:min-w-0">
                                 All
                                 <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs hidden sm:inline">
                                     {totalEvents}
                                 </Badge>
                             </TabsTrigger>
-                            <TabsTrigger value="upcoming" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-[100px] sm:min-w-0">
+                            <TabsTrigger value="upcoming" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-25 sm:min-w-0">
                                 Upcoming
                                 <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs hidden sm:inline">
                                     {upcomingEvents}
                                 </Badge>
                             </TabsTrigger>
-                            <TabsTrigger value="live" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-[100px] sm:min-w-0">
+                            <TabsTrigger value="live" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-25 sm:min-w-0">
                                 Live
                                 <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs hidden sm:inline">
                                     {liveEvents}
                                 </Badge>
                             </TabsTrigger>
-                            <TabsTrigger value="past" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-[100px] sm:min-w-0">
+                            <TabsTrigger value="past" className="rounded-full data-[state=active]:bg-background flex-1 sm:flex-none min-w-25 sm:min-w-0">
                                 Past
                                 <Badge variant="secondary" className="ml-2 px-1.5 py-0.5 text-xs hidden sm:inline">
                                     {pastEvents}
@@ -419,8 +373,8 @@ const EventShowingPage = () => {
                 {/* Events Grid/List */}
                 {loading ? (
                     <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid'
-                            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                            : 'grid-cols-1'
+                        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                        : 'grid-cols-1'
                         }`}>
                         {[...Array(6)].map((_, i) => (
                             <EventCardSkeleton key={i} />

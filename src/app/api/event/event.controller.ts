@@ -19,7 +19,6 @@ class EventController {
 
       const body = await req.json();
 
-      // 🔐 Zod validation
       const data = eventApiSchema.parse(body);
 
       const event = await prisma.event.create({
@@ -31,6 +30,7 @@ class EventController {
           createdById: session.user.id,
           startDate: data.startDate,
           endDate: data.endDate,
+          type: data.type,
         },
       });
 
