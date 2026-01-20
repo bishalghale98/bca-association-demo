@@ -120,7 +120,7 @@ const AdminEventPage = () => {
                                         <FormControl>
                                             <Textarea
                                                 placeholder="Describe your event..."
-                                                className="min-h-[100px]"
+                                                className="min-h-25"
                                                 {...field}
                                                 disabled={isSubmitting}
                                                 value={field.value || ''}

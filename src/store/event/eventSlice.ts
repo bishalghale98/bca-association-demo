@@ -154,11 +154,13 @@ export const createEvent = (data: EventFormValues) => {
 
 export const getAllEvents = () => {
   return async (dispatch: AppDispatch) => {
+    dispatch(startFetchEvent())
     try {
       const res = await api.get("/event");
 
       if (!res.data.success) {
         dispatch(failureFetchEvent(res.data.message));
+
       } else {
         dispatch(successFetchEvent(res.data.data));
       }
