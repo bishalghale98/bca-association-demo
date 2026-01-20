@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { UserRole } from "./generated/prisma/enums";
+import { UserRole } from "./types/user/enums";
 
 export async function proxy(request: NextRequest) {
   const token = await getToken({
@@ -31,9 +31,9 @@ export async function proxy(request: NextRequest) {
   }
 
   // ✅ Role-based route protection example (optional)
-  if (token?.role === UserRole.MEMBER && pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+  // if (token?.role === UserRole.MEMBER && pathname.startsWith("/admin")) {
+  //   return NextResponse.redirect(new URL("/dashboard", request.url));
+  // }
   if (
     token?.role !== UserRole.SUPER_ADMIN &&
     pathname.startsWith("/super-admin")

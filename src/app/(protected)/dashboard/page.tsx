@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,8 @@ import DesktopTabs from '@/components/user-dashboard/desktop-tabs';
 import renderMobileTabContent from '@/components/user-dashboard/mobile-tabs';
 import { useSession } from 'next-auth/react';
 import { MembershipStatus } from '@/types/user/enums';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getAllEvents } from '@/store/event/eventSlice';
 
 export type UserRole = 'member' | 'admin' | 'super_admin';
 export type EventStatus = 'registered' | 'attended' | 'completed' | 'upcoming';
@@ -88,6 +90,8 @@ export default function UserDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
     const [searchQuery, setSearchQuery] = useState('');
     const [eventType, setEventType] = useState<EventType>('all');
+    const dispatch = useAppDispatch()
+    const { events } = useAppSelector((store) => store.event)
 
     const [user, setUser] = useState<UserProfile>({
         id: 1,
@@ -105,7 +109,7 @@ export default function UserDashboard() {
         nextLevelPoints: 1000,
     });
 
-    const {data: session} = useSession()
+    const { data: session } = useSession()
 
     const userEvents: UserEvent[] = [
         { id: 1, title: "Annual BCA Hackathon 2024", date: "Dec 15-16, 2024", type: "Competition", status: "registered" },
@@ -114,6 +118,12 @@ export default function UserDashboard() {
         { id: 4, title: "Web Development Bootcamp", date: "Jan 15-20, 2025", type: "Workshop", status: "upcoming" },
         { id: 5, title: "Data Science Symposium", date: "Feb 28, 2025", type: "Seminar", status: "registered" },
     ];
+
+    useEffect(() => {
+        dispatch(getAllEvents())
+    }, [dispatch])
+
+
 
     const notifications: Notification[] = [
         { id: 1, title: "Event Registration Confirmed", message: "Your registration for Annual Hackathon is confirmed", type: "event", time: "2 hours ago", read: false },
@@ -150,9 +160,7 @@ export default function UserDashboard() {
         { id: 'seminar', label: 'Seminars', icon: Users },
     ];
 
-    const handleLogout = () => {
-        router.push('/login');
-    };
+
 
     const markNotificationAsRead = (id: number) => {
         console.log(`Mark notification ${id} as read`);

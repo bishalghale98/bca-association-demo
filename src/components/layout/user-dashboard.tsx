@@ -22,6 +22,8 @@ const UserDashboardLayout = ({
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
         { id: 'profile', label: 'profile', icon: Users, href: '/dashboard/profile' },
+        { id: 'Events', label: 'Events', icon: Users, href: '/dashboard/events' },
+
     ]
 
     const footerItems = [

@@ -93,7 +93,7 @@ const DesktopTabs = ({
                             <h3 className="text-base sm:text-xl font-bold text-[#0F172A] dark:text-[#E5E7EB]">
                                 Upcoming Events
                             </h3>
-                            <Link href="/events">
+                            <Link href="/dashboard/events">
                                 <Button variant="ghost" size="sm" className="gap-1 text-xs sm:text-sm">
                                     View All
                                     <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />

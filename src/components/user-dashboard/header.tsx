@@ -46,7 +46,7 @@ const Header = ({ session, unreadNotifications, handleLogout, getCurrentPageTitl
 
                         {(session?.user?.role === UserRole.ADMIN || session?.user.role === UserRole.SUPER_ADMIN) && (
                             <Link
-                                href="/admin"
+                                href="/admin/dashboard"
                                 className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20"
                             >
                                 <Building className="w-4 h-4" />

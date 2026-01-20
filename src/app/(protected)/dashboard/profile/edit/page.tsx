@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -40,27 +40,20 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { updateUser, AllStatus, resetState } from '@/store/auth/authSlice';
 
 // Define validation schema
 const profileFormSchema = z.object({
-    // Avatar (optional file)
     avatar: z.instanceof(File).optional().nullable(),
-
-    // Contact Information
     phone: z.string().optional().nullable(),
     bio: z.string().max(500, "Bio must be less than 500 characters").optional().nullable(),
-
-    // Academic Information
     course: z.string().max(100, "Course name too long").optional().nullable(),
     specialization: z.string().max(100, "Specialization name too long").optional().nullable(),
     semester: z.string().optional().nullable(),
-
-    // Personal Information
     dateOfBirth: z.string().optional().nullable(),
     gender: z.enum(['MALE', 'FEMALE', 'OTHER'] as const).optional().nullable(),
     address: z.string().max(200, "Address too long").optional().nullable(),
-
-    // Medical Information
     bloodGroup: z.string().optional().nullable(),
     emergencyContact: z.string().max(100, "Emergency contact too long").optional().nullable(),
 });
@@ -72,8 +65,10 @@ const EditProfilePage = () => {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const dispatch = useAppDispatch()
+    const { allStatus, error, updatedUser } = useAppSelector((store) => store.auth)
 
-    // Initialize form with default values
+    // Initialize form with current user data
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
@@ -94,15 +89,62 @@ const EditProfilePage = () => {
         mode: 'onChange',
     });
 
-    // Watch the avatar field for changes
-    const watchedAvatar = form.watch('avatar');
+    // Reset form when session data changes
+    useEffect(() => {
+        if (session?.user) {
+            form.reset({
+                avatar: null,
+                phone: session.user.phone || '',
+                bio: session.user.bio || '',
+                course: session.user.course || '',
+                specialization: session.user.specialization || '',
+                semester: session.user.semester || '',
+                dateOfBirth: session.user.dateOfBirth
+                    ? new Date(session.user.dateOfBirth).toISOString().split('T')[0]
+                    : '',
+                gender: session.user.gender,
+                address: session.user.address || '',
+                bloodGroup: session.user.bloodGroup || '',
+                emergencyContact: session.user.emergencyContact || '',
+            });
+        }
+    }, [session, form]);
 
-    // Update preview when avatar changes
+    // Handle Redux update success
+    useEffect(() => {
+        if (allStatus === AllStatus.SUCCESS) {
+
+            // Update NextAuth session with the updated user data
+            if (updatedUser) {
+                update({
+                    ...session,
+                    user: {
+                        ...session?.user,
+                        ...updatedUser
+                    }
+                }).then(() => {
+                    // Redirect to profile page after successful update
+                    toast.success("Profile successfully updated");
+
+                    dispatch(resetState())
+                    router.push('/dashboard/profile');
+                });
+            }
+            setIsSubmitting(false);
+        }
+
+        if (allStatus === AllStatus.ERROR) {
+            toast.error(error || "Failed to update profile");
+            setIsSubmitting(false);
+        }
+    }, [allStatus, error, updatedUser, update, session, router]);
+
+    // Update avatar preview
+    const watchedAvatar = form.watch('avatar');
     React.useEffect(() => {
         if (watchedAvatar && watchedAvatar instanceof File) {
             const previewUrl = URL.createObjectURL(watchedAvatar);
             setAvatarPreview(previewUrl);
-            // Clean up the object URL when component unmounts or when avatar changes
             return () => URL.revokeObjectURL(previewUrl);
         } else if (session?.user?.avatarUrl) {
             setAvatarPreview(session.user.avatarUrl);
@@ -154,51 +196,31 @@ const EditProfilePage = () => {
     const onSubmit = async (data: ProfileFormValues) => {
         setIsSubmitting(true);
 
-        try {
-            // Create FormData to handle file upload
-            const formData = new FormData();
+        const formData = new FormData();
 
-            // Add avatar file if exists
-            if (data.avatar && data.avatar instanceof File) {
-                formData.append('avatarUrl', data.avatar);
-            }
-
-            // Add other form data
-            const otherData = {
-                phone: data.phone,
-                bio: data.bio,
-                course: data.course,
-                specialization: data.specialization,
-                semester: data.semester,
-                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-                gender: data.gender,
-                address: data.address,
-                bloodGroup: data.bloodGroup,
-                emergencyContact: data.emergencyContact,
-            };
-
-            // Append JSON data for non-file fields
-            formData.append('data', JSON.stringify(otherData));
-
-
-            const res = await api.patch("/user/profile", formData);
-
-            if (res.data.success) {
-                toast.success(res.data.message);
-
-                await update({ user: { ...session.user, ...res.data.data } });
-
-
-                router.push('/dashboard/profile');
-            } else {
-                toast.error(res.data.message || "Failed to update profile");
-            }
-        } catch (error) {
-            console.error('Error updating profile:', error);
-            toast.error("Failed to update profile. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+        // Add avatar file if exists
+        if (data.avatar && data.avatar instanceof File) {
+            formData.append('avatar', data.avatar);
         }
+
+        // Add other form data as JSON
+        const otherData = {
+            phone: data.phone || null,
+            bio: data.bio || null,
+            course: data.course || null,
+            specialization: data.specialization || null,
+            semester: data.semester || null,
+            dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : null,
+            gender: data.gender,
+            address: data.address || null,
+            bloodGroup: data.bloodGroup || null,
+            emergencyContact: data.emergencyContact || null,
+        };
+
+        formData.append('data', JSON.stringify(otherData));
+
+        // Dispatch update action
+        await dispatch(updateUser(formData));
     };
 
     const handleCancel = () => {
@@ -260,12 +282,10 @@ const EditProfilePage = () => {
                                                             onChange={(e) => {
                                                                 const file = e.target.files?.[0];
                                                                 if (file) {
-                                                                    // Validate file size (5MB limit)
                                                                     if (file.size > 5 * 1024 * 1024) {
                                                                         toast.error("File size should be less than 5MB");
                                                                         return;
                                                                     }
-                                                                    // Validate file type
                                                                     if (!file.type.startsWith('image/')) {
                                                                         toast.error("Please select an image file");
                                                                         return;
@@ -335,6 +355,7 @@ const EditProfilePage = () => {
                                                             className="resize-none min-h-25 text-sm sm:text-base"
                                                             {...field}
                                                             value={field.value || ''}
+                                                            disabled={isSubmitting}
                                                         />
                                                     </FormControl>
                                                     <FormDescription className="text-xs">
@@ -509,6 +530,7 @@ const EditProfilePage = () => {
                                                         className="text-sm sm:text-base"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -530,6 +552,7 @@ const EditProfilePage = () => {
                                                     onValueChange={field.onChange}
                                                     defaultValue={field.value || ''}
                                                     value={field.value || ''}
+                                                    disabled={isSubmitting}
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger className="text-sm sm:text-base">
@@ -563,6 +586,7 @@ const EditProfilePage = () => {
                                                         className="text-sm sm:text-base"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -584,6 +608,7 @@ const EditProfilePage = () => {
                                                     onValueChange={field.onChange}
                                                     defaultValue={field.value || ''}
                                                     value={field.value || ''}
+                                                    disabled={isSubmitting}
                                                 >
                                                     <FormControl>
                                                         <SelectTrigger className="text-sm sm:text-base">
@@ -624,6 +649,7 @@ const EditProfilePage = () => {
                                                         className="text-sm sm:text-base min-h-20"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -663,6 +689,7 @@ const EditProfilePage = () => {
                                                         className="text-sm sm:text-base"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -686,6 +713,7 @@ const EditProfilePage = () => {
                                                         className="text-sm sm:text-base"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -708,6 +736,7 @@ const EditProfilePage = () => {
                                                         onValueChange={field.onChange}
                                                         defaultValue={field.value || ''}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     >
                                                         <FormControl>
                                                             <SelectTrigger className="text-sm sm:text-base">
@@ -759,6 +788,7 @@ const EditProfilePage = () => {
                                                         className="text-sm sm:text-base"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        disabled={isSubmitting}
                                                     />
                                                 </FormControl>
                                                 <FormDescription className="text-xs">
@@ -787,7 +817,7 @@ const EditProfilePage = () => {
                             <Button
                                 type="submit"
                                 className="flex-1 sm:flex-none"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !form.formState.isDirty}
                             >
                                 {isSubmitting ? (
                                     <>
@@ -805,7 +835,7 @@ const EditProfilePage = () => {
                     </form>
                 </Form>
             </div>
-        </div >
+        </div>
     );
 };
 

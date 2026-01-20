@@ -1,12 +1,15 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/option";
 import { prisma } from "@/lib/db";
+import path from "path";
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 
 class ProfileController {
   async updateProfile(req: Request) {
     try {
       // 🔐 Auth check
       const session = await getServerSession(authOptions);
+
       if (!session?.user?.id) {
         return Response.json(
           { success: false, message: "Unauthorized" },
@@ -14,24 +17,39 @@ class ProfileController {
         );
       }
 
-      let avatar: File | null = null;
-      let otherData: any = {};
-
       const formData = await req.formData();
 
-      avatar = formData.get("avatarUrl") as File | null;
-      console.log("Avatar file received:", avatar);
-
-      // Other fields sent as JSON string in 'data'
+      const avatar = formData.get("avatarUrl") as File | null;
       const dataStr = formData.get("data")?.toString() || "{}";
-      otherData = JSON.parse(dataStr);
+      const otherData = JSON.parse(dataStr);
 
-      const image = otherData.avatarUrl;
-
-      //  cloudinary login
+      let avatarUrl: string | undefined;
 
       // ===============================
-      // 🔹 Update user in database
+      // 📤 Upload avatar if exists
+      // ===============================
+      if (avatar) {
+        const bytes = await avatar.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const fileName = session.user.name
+          ?.toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-"); // space → dash
+
+        const publicId = `${fileName}-${Date.now()}`;
+
+        const uploadResult = await uploadToCloudinary(
+          buffer,
+          avatar.type,
+          "association/user",
+          publicId,
+        );
+
+        avatarUrl = uploadResult.secure_url;
+      }
+
+      // ===============================
+      // 🧠 Update user in database
       // ===============================
       const updatedUser = await prisma.user.update({
         where: { id: session.user.id },
@@ -48,16 +66,17 @@ class ProfileController {
           address: otherData.address,
           bloodGroup: otherData.bloodGroup,
           emergencyContact: otherData.emergencyContact,
-          // For now, just console avatar; later replace with upload logic
-          // avatarUrl: avatar ? 'upload logic here' : undefined
+
+          ...(avatarUrl && { avatarUrl }),
         },
       });
+
+      const { password, ...userWithoutPassword } = updatedUser;
 
       return Response.json({
         success: true,
         message: "Profile updated successfully",
-        data: updatedUser,
-        avatarReceived: !!avatar, // optional info for frontend
+        data: userWithoutPassword,
       });
     } catch (error) {
       console.error("Profile update error:", error);

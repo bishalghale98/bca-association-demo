@@ -14,8 +14,8 @@ const BottomNav = () => {
             icon: Home,
         },
         {
-            name: 'Members',
-            href: '/members',
+            name: 'Events',
+            href: '/dashboard/events',
             icon: Users,
         },
         {
