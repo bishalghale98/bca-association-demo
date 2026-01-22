@@ -36,6 +36,8 @@ import { useSession } from 'next-auth/react';
 import { MembershipStatus } from '@/types/user/enums';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getAllEvents } from '@/store/event/eventSlice';
+import MobileContent from '@/components/user-dashboard/mobile-content';
+import MobileDashboard from '@/components/user-dashboard/mobile-dashboard';
 
 export type UserRole = 'member' | 'admin' | 'super_admin';
 export type EventStatus = 'registered' | 'attended' | 'completed' | 'upcoming';
@@ -153,7 +155,7 @@ export default function UserDashboard() {
     };
 
     const unreadNotifications = notifications.filter(n => !n.read).length;
-    const progressPercentage = (session?.user?.points / session?.user?.nextLevelPoints) * 100;
+    const progressPercentage = (session?.user?.points as number / session?.user?.nextLevelPoints) * 100;
 
     const mobileTabConfig = [
         { id: 'overview', label: 'Overview', icon: Home },
@@ -390,73 +392,23 @@ export default function UserDashboard() {
                         </Card>
 
                         {/* Mobile Tab Selector */}
-                        <div className="mb-4 sm:mb-6">
-                            <div className="flex items-center justify-between mb-2 sm:mb-3 px-1">
-                                <h2 className="text-base sm:text-lg font-bold text-[#0F172A] dark:text-[#E5E7EB]">
-                                    Dashboard
-                                </h2>
-                                <div className="flex items-center gap-1">
-                                    <div className="text-xs text-[#475569] dark:text-[#94A3B8]">
-                                        {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Mobile Tab Navigation */}
-                            <div className="flex items-center justify-between bg-[#F8FAFC] dark:bg-[#0F172A] rounded-lg p-1">
-                                {mobileTabConfig.map((tab) => {
-                                    const Icon = tab.icon;
-                                    const isActive = activeTab === tab.id;
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-md flex-1 transition-all",
-                                                isActive
-                                                    ? "bg-white dark:bg-[#1E293B] shadow-sm"
-                                                    : "hover:bg-white/50 dark:hover:bg-[#1E293B]/50"
-                                            )}
-                                        >
-                                            <Icon className={cn(
-                                                "w-4 h-4 sm:w-5 sm:h-5 mb-0.5 sm:mb-1",
-                                                isActive
-                                                    ? "text-[#2563EB] dark:text-[#3B82F6]"
-                                                    : "text-[#94A3B8] dark:text-[#64748B]"
-                                            )} />
-                                            <span className={cn(
-                                                "text-[10px] sm:text-xs font-medium truncate max-w-full px-0.5",
-                                                isActive
-                                                    ? "text-[#2563EB] dark:text-[#3B82F6]"
-                                                    : "text-[#64748B] dark:text-[#94A3B8]"
-                                            )}>
-                                                {tab.label}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Mobile Tab Content */}
-                        <div className="mt-3 sm:mt-4">
-                            {renderMobileTabContent({
-                                activeTab,
-                                session,
-                                userEvents,
-                                documents,
-                                notifications,
-                                achievements,
-                                unreadNotifications,
-                                searchQuery,
-                                setSearchQuery,
-                                eventType,
-                                setEventType,
-                                eventTypes,
-                                filteredEvents,
-                                markNotificationAsRead,
-                            })}
-                        </div>
+                        <MobileDashboard
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            session={session}
+                            userEvents={userEvents}
+                            documents={documents}
+                            notifications={notifications}
+                            achievements={achievements}
+                            unreadNotifications={unreadNotifications}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            eventType={eventType}
+                            setEventType={setEventType}
+                            eventTypes={eventTypes}
+                            filteredEvents={filteredEvents}
+                            markNotificationAsRead={markNotificationAsRead}
+                        />
                     </div>
                 </div>
             </div>

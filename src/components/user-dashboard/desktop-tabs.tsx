@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -9,7 +9,10 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Document, Notification, UserEvent, UserProfile } from '@/app/(protected)/dashboard/page';
-import { getSession, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getAllEvents } from '@/store/event/eventSlice';
+import EventCard from './event/card';
 
 interface DesktopTabsProps {
     activeTab: string
@@ -38,6 +41,29 @@ const DesktopTabs = ({
 }: DesktopTabsProps) => {
 
     const { data: session } = useSession()
+
+    const dispatch = useAppDispatch()
+    const { events } = useAppSelector((store) => store.event)
+
+
+
+    useEffect(() => {
+        dispatch(getAllEvents())
+    }, [dispatch])
+
+    const filteredEvents = events?.filter((event) => {
+        const today = new Date();
+        const next7Days = new Date();
+        next7Days.setDate(today.getDate() + 7);
+
+        // pick eventDate first, fallback to startDate
+        const eventDateStr = event.eventDate || event.startDate;
+        if (!eventDateStr) return false;
+
+        const eventDate = new Date(eventDateStr);
+
+        return eventDate >= today && eventDate <= next7Days;
+    });
 
     return (
         <div className="hidden lg:block">
@@ -100,47 +126,10 @@ const DesktopTabs = ({
                                 </Button>
                             </Link>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                            {userEvents
-                                .filter(event => event.status === 'registered' || event.status === 'upcoming')
-                                .slice(0, 3)
-                                .map((event) => (
-                                    <Card key={event.id} className="border-[#E5E7EB] dark:border-[#1E293B]">
-                                        <CardContent className="p-3 sm:p-4">
-                                            <div className="space-y-2 sm:space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <Badge variant="outline" className="border-[#2563EB] text-[#2563EB] text-xs">
-                                                        {event.type}
-                                                    </Badge>
-                                                    <Badge className={cn(
-                                                        "border-0 text-xs",
-                                                        event.status === 'registered' ? "bg-[#2563EB]/10 text-[#2563EB]" :
-                                                            event.status === 'upcoming' ? "bg-[#F59E0B]/10 text-[#F59E0B]" :
-                                                                "bg-[#22C55E]/10 text-[#22C55E]"
-                                                    )}>
-                                                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                                    </Badge>
-                                                </div>
-                                                <h4 className="font-bold text-sm sm:text-base text-[#0F172A] dark:text-[#E5E7EB] line-clamp-2">
-                                                    {event.title}
-                                                </h4>
-                                                <div className="flex items-center text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8]">
-                                                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                                                    {event.date}
-                                                </div>
-                                                <div className="flex  flex-col  gap-2">
-                                                    <Button size="sm" variant="outline" className="text-xs sm:text-sm">
-                                                        View Details
-                                                    </Button>
-                                                    <Button size="sm" className="text-xs text-wrap sm:text-sm">
-                                                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                                                        Add to Calendar
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-3 sm:gap-4">
+                            {filteredEvents?.map((event) => (
+                                <EventCard event={event} key={event.id} />
+                            ))}
                         </div>
                     </div>
 

@@ -42,7 +42,7 @@ class EventController {
       );
     } catch (error) {
       return NextResponse.json(
-        { success: false, error: "Something went wrong" },
+        { success: false, message: "Something went wrong" },
         { status: 500 }
       );
     }
@@ -68,9 +68,9 @@ class EventController {
         { success: true, data: events },
         { status: 200 }
       );
-    } catch {
+    } catch (error) {
       return NextResponse.json(
-        { success: false, error: "Failed to fetch events" },
+        { success: false, message: "Failed to fetch events" },
         { status: 500 }
       );
     }
@@ -128,7 +128,7 @@ class EventController {
       );
     } catch {
       return NextResponse.json(
-        { success: false, error: "Update failed" },
+        { success: false, message: "Update failed" },
         { status: 500 }
       );
     }
@@ -173,7 +173,48 @@ class EventController {
       );
     } catch {
       return NextResponse.json(
-        { success: false, error: "Delete failed" },
+        { success: false, message: "Delete failed" },
+        { status: 500 }
+      );
+    }
+  }
+
+  async getEvent(req: Request, id: string) {
+    try {
+      if (!id) {
+        return NextResponse.json({
+          success: false,
+          message: "Please provide the id"
+        }, {
+          status: 404
+        })
+      }
+
+
+      const event = await prisma.event.findUnique({
+        where: {
+          id
+        }
+      })
+
+      if (!event) {
+        return NextResponse.json({
+          success: false,
+          message: "No event found with that id"
+        }, {
+          status: 404
+        })
+      }
+
+
+      return NextResponse.json({
+        success: true,
+        message: "Event successfully fetched",
+        data: event
+      })
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, message: "Error while fetching" },
         { status: 500 }
       );
     }

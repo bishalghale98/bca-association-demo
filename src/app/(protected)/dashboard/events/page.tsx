@@ -1,7 +1,7 @@
 'use client'
 
 import EventCard from '@/components/user-dashboard/event/card'
-import { getAllEvents, IEvent } from '@/store/event/eventSlice'
+import { getAllEvents, IEvent, Status } from '@/store/event/eventSlice'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { useEffect, useState } from 'react'
 import {
@@ -67,11 +67,15 @@ const getEventStatus = (event: IEvent) => {
     };
 };
 
-const EventShowingPage = () => {
+
+interface IEventShowingPageprops {
+    role?: string;
+    onEdit?: (eventId: string) => void;
+}
+
+const EventShowingPage = ({ role, onEdit }: IEventShowingPageprops) => {
     const dispatch = useAppDispatch()
-    const { events, error, loading } = useAppSelector((store) => store.event)
-    const [isRegistering, setIsRegistering] = useState(false)
-    const [currentEventId, setCurrentEventId] = useState<string | null>(null)
+    const { events, error, fetchAllStatus } = useAppSelector((store) => store.event)
     const [searchQuery, setSearchQuery] = useState('')
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [activeTab, setActiveTab] = useState('all')
@@ -81,14 +85,6 @@ const EventShowingPage = () => {
         dispatch(getAllEvents())
     }, [dispatch])
 
-    const handleRegister = (eventId: string) => {
-        setIsRegistering(true)
-        setCurrentEventId(eventId)
-        setTimeout(() => {
-            setIsRegistering(false)
-            setCurrentEventId(null)
-        }, 1500)
-    }
 
     const handleRefresh = () => {
         dispatch(getAllEvents())
@@ -134,7 +130,7 @@ const EventShowingPage = () => {
     }).length || 0
 
 
-   
+
     if (error) {
         return (
             <Error error={error} handleRefresh={handleRefresh} />
@@ -167,9 +163,9 @@ const EventShowingPage = () => {
                                 variant="outline"
                                 size="sm"
                                 className="rounded-full"
-                                disabled={loading}
+                                disabled={fetchAllStatus === Status.LOADING}
                             >
-                                {loading ? (
+                                {fetchAllStatus === Status.LOADING ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <RefreshCw className="h-4 w-4" />
@@ -308,7 +304,7 @@ const EventShowingPage = () => {
                 </div>
 
                 {/* Events Grid/List */}
-                {loading ? (
+                {fetchAllStatus === Status.LOADING ? (
                     <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid'
                         ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
                         : 'grid-cols-1'
@@ -353,49 +349,17 @@ const EventShowingPage = () => {
                             <EventCard
                                 key={event.id}
                                 event={event}
-                                onRegister={handleRegister}
+                                onEdit={onEdit}
+                                role={role}
                                 viewMode={viewMode}
-                                className={
-                                    currentEventId === event.id && isRegistering
-                                        ? 'opacity-50 pointer-events-none'
-                                        : ''
-                                }
+
                             />
                         ))}
                     </div>
                 )}
             </div>
 
-            {/* Registration Loading Modal */}
-            {isRegistering && currentEventId && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-background rounded-2xl p-6 sm:p-8 max-w-md w-full border border-border/50 shadow-2xl">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="relative mb-4 sm:mb-6">
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 text-primary animate-spin" />
-                                </div>
-                                <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-transparent animate-spin"></div>
-                            </div>
-                            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">
-                                Processing Registration
-                            </h3>
-                            <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base">
-                                Registering for{" "}
-                                <span className="font-medium text-foreground">
-                                    {events?.find(e => e.id === currentEventId)?.title}
-                                </span>
-                            </p>
-                            <div className="w-full bg-secondary/30 rounded-full h-2 mt-1 sm:mt-2 overflow-hidden">
-                                <div className="h-full bg-primary animate-pulse rounded-full w-3/4"></div>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2 sm:mt-3">
-                                This usually takes a few seconds...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* Footer Note */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-8 sm:mt-12 border-t border-border/50">

@@ -1,54 +1,22 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AppDispatch } from "../store";
-import { api } from "@/lib/api";
-import { RegisterFormValues } from "@/schema/auth.schema";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
+import { api } from "@/lib/api";
 import { EventFormValues } from "@/schema/event/createEvent";
-export interface IUser {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string | null;
-  avatarUrl?: string | null;
 
-  role: "ADMIN" | "MEMBER" | "SUPER_ADMIN";
-
-  // Academic
-  studentId: string;
-  course?: string | null;
-  specialization?: string | null;
-  semester: string;
-  year?: number | null;
-
-  // Profile
-  dateOfBirth?: string | null; // ISO string
-  gender?: "MALE" | "FEMALE" | "OTHER" | null;
-  address?: string | null;
-  bio?: string | null;
-  bloodGroup?: string | null;
-  emergencyContact?: string | null;
-
-  // Membership
-  membershipStatus: "PENDING" | "ACTIVE" | "EXPIRED";
-
-  // Gamification
-  points: number;
-  level: number;
-  nextLevelPoints: number;
-}
+/* ================= TYPES ================= */
 
 export interface IEvent {
   id: string;
   title: string;
-  description: string | null;
-  location: string | null;
-  type: string | null;
-  eventDate?: string; // ISO string from API
-  endDate?: string;
+  description?: string | null;
+  location?: string | null;
+  type?: string | null;
+  eventDate?: string;
   startDate?: string;
+  endDate?: string;
   createdById: string;
-  createdAt: string; // ISO string
-  updatedAt: string; // ISO string
+  createdAt: string;
+  updatedAt: string;
 }
 
 export enum Status {
@@ -58,118 +26,239 @@ export enum Status {
   ERROR = "error",
 }
 
-interface IAuthState {
-  status: Status;
-  error: string | null;
+/* ================= STATE ================= */
+
+interface EventState {
+  events: IEvent[];
   event: IEvent | null;
-  events: IEvent[] | null;
-  loading: boolean;
+
+  // Separate status for each async operation
+  fetchAllStatus: Status;
+  fetchOneStatus: Status;
+  createStatus: Status;
+  updateStatus: Status;
+  deleteStatus: Status;
+
+  error: string | null;
 }
 
-const initialState: IAuthState = {
-  status: Status.IDLE,
-  error: null,
-  loading: false,
+/* ================= INITIAL STATE ================= */
+
+const initialState: EventState = {
+  events: [],
   event: null,
-  events: null,
+
+  // All statuses start as IDLE
+  fetchAllStatus: Status.IDLE,
+  fetchOneStatus: Status.IDLE,
+  createStatus: Status.IDLE,
+  updateStatus: Status.IDLE,
+  deleteStatus: Status.IDLE,
+
+  error: null,
 };
 
+/* ================= ASYNC THUNKS ================= */
+
+export const createEvent = createAsyncThunk<
+  IEvent,
+  EventFormValues,
+  { rejectValue: string }
+>("event/create", async (data, { rejectWithValue }) => {
+  try {
+    const res = await api.post("/event", data);
+    if (!res.data.success) return rejectWithValue(res.data.message);
+    return res.data.data;
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+});
+
+export const getAllEvents = createAsyncThunk<
+  IEvent[],
+  void,
+  { rejectValue: string }
+>("event/getAll", async (_, { rejectWithValue }) => {
+  try {
+    const res = await api.get("/event");
+    if (!res.data.success) return rejectWithValue(res.data.message);
+    return res.data.data;
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+});
+
+export const getEventById = createAsyncThunk<
+  IEvent,
+  string,
+  { rejectValue: string }
+>("event/getById", async (id, { rejectWithValue }) => {
+  try {
+    const res = await api.get(`/event/${id}`);
+    if (!res.data.success) return rejectWithValue(res.data.message);
+    return res.data.data;
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+});
+
+export const updateEvent = createAsyncThunk<
+  IEvent,
+  { id: string; data: EventFormValues },
+  { rejectValue: string }
+>("event/update", async ({ id, data }, { rejectWithValue }) => {
+  try {
+    const res = await api.patch(`/event/${id}`, data);
+    if (!res.data.success) return rejectWithValue(res.data.message);
+    return res.data.data;
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+});
+
+export const deleteEvent = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("event/delete", async (id, { rejectWithValue }) => {
+  try {
+    const res = await api.delete(`/event/${id}`);
+    if (!res.data.success) return rejectWithValue(res.data.message);
+    return id;
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+});
+
+/* ================= SLICE ================= */
+
 const eventSlice = createSlice({
-  name: "auth",
+  name: "event",
   initialState,
   reducers: {
-    resetState(state) {
-      state.status = Status.IDLE;
+    resetEventState: (state) => {
+      // Reset all statuses to IDLE
+      state.fetchAllStatus = Status.IDLE;
+      state.fetchOneStatus = Status.IDLE;
+      state.createStatus = Status.IDLE;
+      state.updateStatus = Status.IDLE;
+      state.deleteStatus = Status.IDLE;
       state.error = null;
       state.event = null;
-      state.loading = false;
     },
+    // Optional: Reset individual statuses
+    resetFetchAllStatus: (state) => {
+      state.fetchAllStatus = Status.IDLE;
+    },
+    resetFetchOneStatus: (state) => {
+      state.fetchOneStatus = Status.IDLE;
+    },
+    resetCreateStatus: (state) => {
+      state.createStatus = Status.IDLE;
+    },
+    resetUpdateStatus: (state) => {
+      state.updateStatus = Status.IDLE;
+    },
+    resetDeleteStatus: (state) => {
+      state.deleteStatus = Status.IDLE;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
 
-    startCreateEvent(state) {
-      state.status = Status.LOADING;
-    },
+      /* ===== FETCH ALL EVENTS ===== */
+      .addCase(getAllEvents.pending, (state) => {
+        state.fetchAllStatus = Status.LOADING;
+      })
+      .addCase(getAllEvents.fulfilled, (state, action: PayloadAction<IEvent[]>) => {
+        state.fetchAllStatus = Status.SUCCESS;
+        state.events = action.payload;
+      })
+      .addCase(getAllEvents.rejected, (state, action) => {
+        state.fetchAllStatus = Status.ERROR;
+        state.error = action.payload as string;
+      })
 
-    successCreateEvent(state, action) {
-      state.status = Status.SUCCESS;
-      state.error = null;
-      state.events?.push(action.payload);
-    },
+      /* ===== CREATE EVENT ===== */
+      .addCase(createEvent.pending, (state) => {
+        state.createStatus = Status.LOADING;
+      })
+      .addCase(createEvent.fulfilled, (state, action: PayloadAction<IEvent>) => {
+        state.createStatus = Status.SUCCESS;
+        state.events.unshift(action.payload);
+      })
+      .addCase(createEvent.rejected, (state, action) => {
+        state.createStatus = Status.ERROR;
+        state.error = action.payload as string;
+      })
 
-    createFailure(state, action) {
-      state.status = Status.ERROR;
-      state.error = action.payload;
-    },
+      /* ===== GET EVENT BY ID ===== */
+      .addCase(getEventById.pending, (state) => {
+        state.fetchOneStatus = Status.LOADING;
+      })
+      .addCase(getEventById.fulfilled, (state, action: PayloadAction<IEvent>) => {
+        state.fetchOneStatus = Status.SUCCESS;
+        state.event = action.payload;
+      })
+      .addCase(getEventById.rejected, (state, action) => {
+        state.fetchOneStatus = Status.ERROR;
+        state.error = action.payload as string;
+      })
 
-    startFetchEvent(state) {
-      state.status = Status.LOADING;
-      state.loading = true;
-    },
+      /* ===== UPDATE EVENT ===== */
+      .addCase(updateEvent.pending, (state) => {
+        state.updateStatus = Status.LOADING;
+      })
+      .addCase(updateEvent.fulfilled, (state, action: PayloadAction<IEvent>) => {
+        state.updateStatus = Status.SUCCESS;
+        state.event = action.payload;
+        state.events = state.events.map((event) =>
+          event.id === action.payload.id ? action.payload : event
+        );
+      })
+      .addCase(updateEvent.rejected, (state, action) => {
+        state.updateStatus = Status.ERROR;
+        state.error = action.payload as string;
+      })
 
-    successFetchEvent(state, action) {
-      state.status = Status.SUCCESS;
-      state.error = null;
-      state.events = action.payload;
-      state.loading = false;
-    },
-
-    failureFetchEvent(state, action) {
-      state.status = Status.ERROR;
-      state.error = action.payload;
-      state.loading = false;
-    },
+      /* ===== DELETE EVENT ===== */
+      .addCase(deleteEvent.pending, (state) => {
+        state.deleteStatus = Status.LOADING;
+      })
+      .addCase(deleteEvent.fulfilled, (state, action: PayloadAction<string>) => {
+        state.deleteStatus = Status.SUCCESS;
+        state.events = state.events.filter(
+          (event) => event.id !== action.payload
+        );
+      })
+      .addCase(deleteEvent.rejected, (state, action) => {
+        state.deleteStatus = Status.ERROR;
+        state.error = action.payload as string;
+      });
   },
 });
 
 export const {
-  resetState,
-  startCreateEvent,
-  successCreateEvent,
-  createFailure,
-  failureFetchEvent,
-  successFetchEvent,
-  startFetchEvent,
+  resetEventState,
+  resetFetchAllStatus,
+  resetFetchOneStatus,
+  resetCreateStatus,
+  resetUpdateStatus,
+  resetDeleteStatus
 } = eventSlice.actions;
 export default eventSlice.reducer;
-
-export const createEvent = (data: EventFormValues) => {
-  return async (dispatch: AppDispatch) => {
-    try {
-      const res = await api.post("/event", data);
-      console.log(res.data.data);
-
-      if (!res.data.success) {
-        dispatch(createFailure(res.data.message));
-      } else {
-        dispatch(successCreateEvent(res.data.data));
-      }
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        dispatch(createFailure(error.response?.data?.message));
-      } else {
-        dispatch(createFailure("Something went wrong"));
-      }
-    }
-  };
-};
-
-export const getAllEvents = () => {
-  return async (dispatch: AppDispatch) => {
-    dispatch(startFetchEvent())
-    try {
-      const res = await api.get("/event");
-
-      if (!res.data.success) {
-        dispatch(failureFetchEvent(res.data.message));
-
-      } else {
-        dispatch(successFetchEvent(res.data.data));
-      }
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        dispatch(failureFetchEvent(error.response?.data?.message));
-      } else {
-        dispatch(failureFetchEvent("Something went wrong"));
-      }
-    }
-  };
-};

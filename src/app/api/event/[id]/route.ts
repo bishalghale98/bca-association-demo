@@ -9,3 +9,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params
     return eventController.deleteEvent(req, id);
 }
+
+
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    return eventController.getEvent(req, id);
+}

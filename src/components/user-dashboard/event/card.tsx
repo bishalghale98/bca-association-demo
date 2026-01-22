@@ -1,5 +1,5 @@
 // components/EventCard/EventCard.tsx
-import { IEvent } from '@/store/event/eventSlice';
+import { deleteEvent, IEvent } from '@/store/event/eventSlice';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,7 +14,13 @@ import {
     ChevronRightIcon,
     ExternalLinkIcon,
     UsersIcon,
+    EditIcon,
+    TrashIcon,
 } from 'lucide-react';
+import { UserRole } from '@/types/user/enums';
+import { DeleteModal } from '@/components/common/delete-confirmation';
+import { useAppDispatch } from '@/store/hooks';
+
 
 interface EventCardProps {
     event: IEvent;
@@ -24,16 +30,20 @@ interface EventCardProps {
     onDelete?: (eventId: string) => void;
     registrationsCount?: number;
     viewMode?: 'grid' | 'list';
+    role?: string;
 }
 
 const EventCard: React.FC<EventCardProps> = ({
     event,
-    onRegister,
     className = '',
     registrationsCount = 0,
+    role,
+    onEdit,
+    onDelete,
     viewMode = 'grid'
 }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const dispatch = useAppDispatch()
 
     const formatDateTime = (dateString: string) => {
         const date = new Date(dateString);
@@ -108,32 +118,45 @@ const EventCard: React.FC<EventCardProps> = ({
         return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     };
 
-    const handleRegisterClick = () => {
-        if (onRegister) {
-            onRegister(event.id);
-        }
+    const handleRegister = (eventId: string) => {
+        console.log('Register for event:', eventId);
     };
 
     const handleViewDetails = () => {
-        // Could navigate to event details page
         console.log('View details for:', event.id);
     };
+
+    const handleEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        console.log(event.id)
+        if (onEdit) onEdit(event.id);
+    };
+
+    const handleDelete = async (itemId: string) => {
+        await dispatch(deleteEvent(itemId))
+
+    };
+
+
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, title: string } | null>(null)
+
+
+
+    // Check if user has admin/editor role
 
     if (viewMode === 'list') {
         return (
             <Card
-                className={`group relative overflow-hidden border-0 rounded-lg hover:shadow-lg transition-all duration-300 bg-linear-to-br from-background to-secondary/5 ${className}`}
+                className={`group relative overflow-hidden border rounded-lg hover:shadow-md transition-all duration-200 ${className}`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                {/* Animated background linear */}
-                <div className={`absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent transition-all duration-700 ${isHovered ? 'translate-x-full' : '-translate-x-full'}`} />
-
                 <div className="relative p-6">
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className={`p-2 rounded-lg ${getEventStatus().color} transition-all duration-300`}>
+                                <div className={`p-2 rounded-lg ${getEventStatus().color}`}>
                                     {isMultiDayEvent() ? (
                                         <CalendarRangeIcon className="h-5 w-5" />
                                     ) : (
@@ -141,25 +164,22 @@ const EventCard: React.FC<EventCardProps> = ({
                                     )}
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                                    <h3 className="text-lg font-semibold text-foreground">
                                         {event.title}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Badge variant={getEventStatus().variant} className="text-xs">
                                             {getEventStatus().label}
                                         </Badge>
-
-                                        {
-                                            event.type && (
-                                                <Badge className="text-xs mr-2">
-                                                    {event.type}
-                                                </Badge>
-                                            )
-                                        }
+                                        {event.type && (
+                                            <Badge className="text-xs mr-2">
+                                                {event.type}
+                                            </Badge>
+                                        )}
                                         {registrationsCount > 0 && (
                                             <Badge variant="outline" className="text-xs">
                                                 <UsersIcon className="h-3 w-3 mr-1" />
-                                                {registrationsCount} registered
+                                                {registrationsCount}
                                             </Badge>
                                         )}
                                     </div>
@@ -173,50 +193,61 @@ const EventCard: React.FC<EventCardProps> = ({
                             )}
                         </div>
 
-                        {/* Action menu */}
+                        {/* Action buttons for role */}
+                        {role && (
+                            <div className="flex items-center gap-2 ml-4">
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="transition-all duration-300 opacity-0 group-hover:opacity-100"
-                            onClick={handleViewDetails}
-                        >
-                            <ExternalLinkIcon className="h-4 w-4" />
-                        </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={handleEdit}
+                                >
+                                    <EditIcon className="h-4 w-4" />
+                                </Button>
 
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-destructive"
+                                    onClick={() => {
+                                        setItemToDelete({ id: event.id, title: event.title })
+                                        setIsModalOpen(true)
+                                    }}
+                                >
+                                    <TrashIcon className="h-4 w-4" />
+                                </Button>
+
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        {/* Date/Time Info */}
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                            <CalendarClockIcon className="h-5 w-5 text-primary shrink-0" />
-                            <div className="flex-1">
-                                <p className="text-xs text-muted-foreground">When</p>
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20">
+                            <CalendarClockIcon className="h-5 w-5 text-primary" />
+                            <div>
                                 <p className="text-sm font-medium">
                                     {isMultiDayEvent()
                                         ? `${formatDateTime(event.startDate!).fullDate} to ${formatDateTime(event.endDate!).fullDate}`
-                                        : `${formatDateTime(event.eventDate!).weekday}, ${formatDateTime(event.eventDate!).fullDateTime}`
+                                        : formatDateTime(event.eventDate!).fullDateTime
                                     }
                                 </p>
                             </div>
                         </div>
 
-                        {/* Location Info */}
                         {event.location && (
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                                <MapPinIcon className="h-5 w-5 text-primary shrink-0" />
-                                <div className="flex-1">
-                                    <p className="text-xs text-muted-foreground">Where</p>
-                                    <p className="text-sm font-medium truncate">{event.location}</p>
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20">
+                                <MapPinIcon className="h-5 w-5 text-primary" />
+                                <div>
+                                    <p className="text-sm font-medium">{event.location}</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* Duration Info */}
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                            <ClockIcon className="h-5 w-5 text-primary shrink-0" />
-                            <div className="flex-1">
-                                <p className="text-xs text-muted-foreground">Duration</p>
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20">
+                            <ClockIcon className="h-5 w-5 text-primary" />
+                            <div>
                                 <p className="text-sm font-medium">
                                     {isMultiDayEvent()
                                         ? `${getDurationDays()} days`
@@ -227,7 +258,7 @@ const EventCard: React.FC<EventCardProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-between pt-4 border-t">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <UserIcon className="h-4 w-4" />
                             <span>Created {formatDateTime(event.createdAt).date}</span>
@@ -236,13 +267,10 @@ const EventCard: React.FC<EventCardProps> = ({
                         <div className="flex items-center gap-2">
                             {!isPastEvent() && (
                                 <Button
-                                    onClick={handleRegisterClick}
-                                    className="rounded-full px-6"
-                                    variant="default"
+                                    onClick={() => handleRegister(event.id)}
                                     size="sm"
                                 >
-                                    Register Now
-                                    <ChevronRightIcon className="ml-2 h-4 w-4" />
+                                    Register
                                 </Button>
                             )}
                         </div>
@@ -255,109 +283,77 @@ const EventCard: React.FC<EventCardProps> = ({
     // Grid View (Default)
     return (
         <Card
-            className={`group relative overflow-hidden border-0 rounded-xl hover:shadow-2xl transition-all duration-500 bg-linear-to-b from-background to-secondary/10 hover:to-primary/5 ${className}`}
+            className={`group relative overflow-hidden border rounded-lg hover:shadow-lg transition-shadow duration-200 ${className}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {/* Floating status badge */}
-            <div className="absolute top-4 right-4 z-20">
+            {/* Status badges */}
+            <div className="absolute top-4 right-4 z-10">
                 <Badge
                     variant={getEventStatus().variant}
-                    className={`rounded-full px-3 py-1 font-medium backdrop-blur-sm transition-all duration-300 ${isHovered ? 'scale-105' : ''}`}
+                    className="rounded-full px-3 py-1"
                 >
                     {getEventStatus().label}
                 </Badge>
-
-                {
-                    event.type && (
-                        <Badge
-                            className={`rounded-full px-3 py-1 font-medium backdrop-blur-sm transition-all duration-300`}
-                        >
-                            {event?.type}
-                        </Badge>
-                    )
-                }
-            </div>
-
-            {/* Event Type indicator */}
-            <div className="absolute top-4 left-4">
-                <div className={`p-2 rounded-lg ${getEventStatus().color} backdrop-blur-sm`}>
-                    {isMultiDayEvent() ? (
-                        <CalendarRangeIcon className="h-5 w-5" />
-                    ) : (
-                        <CalendarDaysIcon className="h-5 w-5" />
-                    )}
-                </div>
+                {event.type && (
+                    <Badge className="mt-2 rounded-full px-3 py-1">
+                        {event.type}
+                    </Badge>
+                )}
             </div>
 
             {/* Card Content */}
             <div className="p-5 pt-16">
-                {/* Title with animated underline */}
-                <div className="mb-4">
-                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
-                        {event.title}
-                    </h3>
-                    <div className="h-0.5 w-0 group-hover:w-full bg-primary/30 transition-all duration-500" />
-                </div>
+                {/* Title */}
+                <h3 className="text-xl font-bold mb-3">
+                    {event.title}
+                </h3>
 
                 {/* Description */}
                 {event.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-6 leading-relaxed">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                         {event.description}
                     </p>
                 )}
 
-                {/* Details Grid */}
-                <div className="space-y-3 mb-6">
-                    {/* Date/Time */}
-                    <div className="flex items-center gap-3">
-                        <CalendarClockIcon className="h-4 w-4 text-primary shrink-0" />
-                        <div className="flex-1">
-                            <p className="text-xs text-muted-foreground">Date & Time</p>
-                            <p className="text-sm font-medium truncate text-wrap">
-                                {isMultiDayEvent()
-                                    ? `${formatDateTime(event.startDate!).fullDateTime} - ${formatDateTime(event.endDate!).fullDateTime}`
-                                    : formatDateTime(event.eventDate!).fullDateTime
-                                }
-                            </p>
-                        </div>
+                {/* Details */}
+                <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2">
+                        <CalendarClockIcon className="h-4 w-4 text-primary" />
+                        <span className="text-sm">
+                            {isMultiDayEvent()
+                                ? `${formatDateTime(event.startDate!).date} - ${formatDateTime(event.endDate!).date}`
+                                : formatDateTime(event.eventDate!).date
+                            }
+                        </span>
                     </div>
 
-                    {/* Location */}
                     {event.location && (
-                        <div className="flex items-center gap-3">
-                            <MapPinIcon className="h-4 w-4 text-primary shrink-0" />
-                            <div className="flex-1">
-                                <p className="text-xs text-muted-foreground">Location</p>
-                                <p className="text-sm font-medium truncate">{event.location}</p>
-                            </div>
+                        <div className="flex items-center gap-2">
+                            <MapPinIcon className="h-4 w-4 text-primary" />
+                            <span className="text-sm truncate">{event.location}</span>
                         </div>
                     )}
 
-                    {/* Duration */}
-                    <div className="flex items-center gap-3">
-                        <ClockIcon className="h-4 w-4 text-primary shrink-0" />
-                        <div className="flex-1">
-                            <p className="text-xs text-muted-foreground">Duration</p>
-                            <p className="text-sm font-medium">
-                                {isMultiDayEvent()
-                                    ? `${getDurationDays()} day${getDurationDays()! > 1 ? 's' : ''}`
-                                    : 'Single day'
-                                }
-                            </p>
-                        </div>
+                    <div className="flex items-center gap-2">
+                        <ClockIcon className="h-4 w-4 text-primary" />
+                        <span className="text-sm">
+                            {isMultiDayEvent()
+                                ? `${getDurationDays()} days`
+                                : formatDateTime(event.eventDate!).time
+                            }
+                        </span>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="pt-5 border-t border-border/50">
-                    <div className="flex items-center justify-between">
+                <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <UserIcon className="h-4 w-4" />
-                            <span className="truncate">Created {formatDateTime(event.createdAt).date}</span>
+                            <span>Created {formatDateTime(event.createdAt).date}</span>
                         </div>
 
-                        {/* Registrations count */}
                         {registrationsCount > 0 && (
                             <Badge variant="outline" className="text-xs">
                                 <UsersIcon className="h-3 w-3 mr-1" />
@@ -367,29 +363,59 @@ const EventCard: React.FC<EventCardProps> = ({
                     </div>
 
                     {/* Action buttons */}
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                        {role && !isPastEvent() && (
+                            <>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={handleEdit}
+                                >
+                                    <EditIcon className="h-4 w-4 mr-2" />
+                                    Edit
+                                </Button>
+
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 text-destructive"
+                                    onClick={() => {
+                                        setItemToDelete({ id: event.id, title: event.title })
+                                        setIsModalOpen(true)
+                                    }}
+                                >
+                                    <TrashIcon className="h-4 w-4 mr-2" />
+                                    Delete
+                                </Button>
+
+                            </>
+                        )}
+
 
                         <Button
-                            onClick={handleRegisterClick}
-                            className={`flex-1 rounded-lg ${isPastEvent() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            variant="default"
+                            onClick={() => handleRegister(event.id)}
+                            className="flex-1"
                             disabled={isPastEvent()}
                         >
-                            {isPastEvent() ? (
-                                'Event Ended'
-                            ) : (
-                                <>
-                                    Register Now
-                                    <ChevronRightIcon className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
+                            {isPastEvent() ? 'Event Ended' : 'Register'}
                         </Button>
+
                     </div>
                 </div>
             </div>
+            {itemToDelete && (
+                <DeleteModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onConfirm={() => handleDelete(itemToDelete.id)}
+                    itemName={itemToDelete.title}
+                    itemType="Event"
+                />
+            )}
 
-            {/* Hover effect overlay */}
-            <div className={`absolute inset-0 bg-linear-to-t from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
         </Card>
     );
 };
