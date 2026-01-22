@@ -1,102 +1,180 @@
 import { prisma } from "@/lib/db";
 import { eventApiSchema } from "@/schema/event/createEvent";
+import { eventUpdateApiSchema } from "@/schema/event/updateEvent";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/option";
-import { ZodError } from "zod";
+import { UserRole } from "@/types/user/enums";
 
 class EventController {
-  async createEvent(req: Request, res: Response) {
+  // ================= CREATE =================
+  async createEvent(req: Request) {
     try {
       const session = await getServerSession(authOptions);
 
       if (!session?.user?.id) {
-        return Response.json(
+        return NextResponse.json(
           { success: false, message: "Unauthorized" },
-          { status: 401 },
+          { status: 401 }
         );
       }
 
       const body = await req.json();
+      const parsed = eventApiSchema.safeParse(body);
 
-      const data = eventApiSchema.parse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { success: false, errors: parsed.error.flatten().fieldErrors },
+          { status: 422 }
+        );
+      }
 
       const event = await prisma.event.create({
         data: {
-          title: data.title,
-          description: data.description,
-          location: data.location,
-          eventDate: data.eventDate,
+          ...parsed.data,
           createdById: session.user.id,
-          startDate: data.startDate,
-          endDate: data.endDate,
-          type: data.type,
         },
       });
 
       return NextResponse.json(
-        {
-          success: true,
-          data: event,
-        },
-        { status: 201 },
+        { success: true, data: event },
+        { status: 201 }
       );
     } catch (error) {
-      if (error instanceof ZodError) {
-        return NextResponse.json(
-          { success: false, errors: error.flatten().fieldErrors },
-          { status: 422 },
-        );
-      }
-
-      if (error instanceof Error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
-      }
-
       return NextResponse.json(
         { success: false, error: "Something went wrong" },
-        { status: 500 },
+        { status: 500 }
       );
     }
   }
 
-  async getAllEvents(req: Request) {
+  // ================= READ =================
+  async getAllEvents() {
     try {
-      // ✅ Get session
       const session = await getServerSession(authOptions);
 
       if (!session?.user?.id) {
         return NextResponse.json(
           { success: false, message: "Unauthorized" },
-          { status: 401 },
+          { status: 401 }
         );
       }
 
-      // ✅ Fetch all events from Prisma
       const events = await prisma.event.findMany({
-        orderBy: { eventDate: "asc" }, // optional: sort by date
+        orderBy: { eventDate: "asc" },
       });
 
-      // ✅ Return successful response
       return NextResponse.json(
-        {
-          success: true,
-          data: events,
-        },
-        { status: 200 },
+        { success: true, data: events },
+        { status: 200 }
       );
-    } catch (error) {
-      console.error("getAllEvents error:", error);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Failed to fetch events" },
+        { status: 500 }
+      );
+    }
+  }
+
+  // ================= UPDATE =================
+  async updateEvent(req: Request, id: string) {
+    try {
+      const session = await getServerSession(authOptions);
+
+      if (!session?.user?.id) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+
+      const event = await prisma.event.findUnique({ where: { id } });
+
+      if (!event) {
+        return NextResponse.json(
+          { success: false, message: "Event not found" },
+          { status: 404 }
+        );
+      }
+
+      if (
+        session.user.role !== UserRole.SUPER_ADMIN &&
+        event.createdById !== session.user.id
+      ) {
+        return NextResponse.json(
+          { success: false, message: "Forbidden" },
+          { status: 403 }
+        );
+      }
+
+      const body = await req.json();
+      const parsed = eventUpdateApiSchema.safeParse(body);
+
+      if (!parsed.success) {
+        return NextResponse.json(
+          { success: false, errors: parsed.error.flatten().fieldErrors },
+          { status: 422 }
+        );
+      }
+
+      const updatedEvent = await prisma.event.update({
+        where: { id },
+        data: parsed.data,
+      });
 
       return NextResponse.json(
-        {
-          success: false,
-          error: (error as Error).message || "Something went wrong",
-        },
-        { status: 500 },
+        { success: true, data: updatedEvent },
+        { status: 200 }
+      );
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Update failed" },
+        { status: 500 }
+      );
+    }
+  }
+
+  // ================= DELETE =================
+  async deleteEvent(req: Request, id: string) {
+    try {
+      const session = await getServerSession(authOptions);
+
+      if (!session?.user?.id) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+
+      const event = await prisma.event.findUnique({ where: { id } });
+
+      if (!event) {
+        return NextResponse.json(
+          { success: false, message: "Event not found" },
+          { status: 404 }
+        );
+      }
+
+      if (
+        session.user.role !== UserRole.SUPER_ADMIN &&
+        event.createdById !== session.user.id
+      ) {
+        return NextResponse.json(
+          { success: false, message: "Forbidden" },
+          { status: 403 }
+        );
+      }
+
+      await prisma.event.delete({ where: { id } });
+
+      return NextResponse.json(
+        { success: true, message: "Event deleted successfully" },
+        { status: 200 }
+      );
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Delete failed" },
+        { status: 500 }
       );
     }
   }

@@ -17,10 +17,8 @@ import {
     Edit,
     CreditCard,
     BookOpen,
-    History,
     AlertCircle,
     QrCode,
-    Settings,
     IdCard,
     Printer,
     Share2,
@@ -34,6 +32,12 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSession } from 'next-auth/react';
 import { MembershipStatus, UserRole } from '@/types/user/enums';
+import dynamic from 'next/dynamic';
+
+const QRCodeCanvas = dynamic(
+    () => import('qrcode.react').then((mod) => mod.QRCodeCanvas),
+    { ssr: false }
+);
 
 const UserProfilePage = () => {
     const [activeTab, setActiveTab] = React.useState('profile');
@@ -43,7 +47,7 @@ const UserProfilePage = () => {
     // Show loading state while session is loading
     if (status === 'loading') {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+            <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                     <div className="flex items-center justify-center h-64">
                         <div className="text-center">
@@ -59,7 +63,7 @@ const UserProfilePage = () => {
     // Redirect or show error if no session
     if (!session?.user) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+            <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
                     <div className="text-center py-16">
                         <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A] dark:text-[#E5E7EB] mb-2">
@@ -82,9 +86,49 @@ const UserProfilePage = () => {
     const user = session.user;
     const progressPercentage = (user.points / user.nextLevelPoints) * 100;
 
+
+    const generateQRData = () => {
+        return JSON.stringify({
+            organization: "BCA Association",
+            memberId: user.studentId,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || "Not provided",
+            course: user.course || "Not specified",
+            semester: user.semester ? `Semester ${user.semester}` : "Not specified",
+            issuedOn: new Date().toLocaleDateString(),
+        });
+    };
+
+    const qrData = generateQRData();
+
     // ID Card download function
-    const handleDownloadIDCard = () => {
-        toast.success("ID Card downloaded successfully!");
+    const handleDownloadIDCard = async () => {
+        if (!idCardRef.current) {
+            toast.error("ID Card not found!");
+            return;
+        }
+
+        try {
+            const html2canvas = (await import('html2canvas')).default;
+            const cardElement = idCardRef.current;
+
+            const canvas = await html2canvas(cardElement, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+            });
+
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = `${user.studentId}-id-card.png`;
+            link.click();
+
+            toast.success("ID Card downloaded!");
+        } catch (error) {
+            toast.error("Download failed");
+        }
     };
 
     const handlePrintIDCard = () => {
@@ -388,7 +432,7 @@ const UserProfilePage = () => {
                 <Card className="border-[#E5E7EB] dark:border-[#1E293B] overflow-hidden print:border-2 print:border-gray-300">
                     <CardContent className="p-0">
                         {/* ID Card Header */}
-                        <div className="bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] p-4 sm:p-6 text-white">
+                        <div className="bg-linear-to-r from-[#2563EB] to-[#1D4ED8] p-4 sm:p-6 text-white">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <Building className="w-6 h-6 sm:w-8 sm:h-8" />
@@ -399,7 +443,7 @@ const UserProfilePage = () => {
                                 </div>
                                 <div className="text-left sm:text-right">
                                     <div className="text-xs sm:text-sm opacity-90">Valid Until</div>
-                                    <div className="font-bold text-sm sm:text-base">Dec 2025</div>
+                                    <div className="font-bold text-sm sm:text-base">Until BCA Clear</div>
                                 </div>
                             </div>
                         </div>
@@ -422,11 +466,9 @@ const UserProfilePage = () => {
                                         </h3>
                                         <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 mb-2">
                                             <Badge className="bg-[#22C55E]/10 text-[#22C55E] text-xs">
-                                                Active Member
+                                                {user.membershipStatus}
                                             </Badge>
-                                            <Badge variant="outline" className="border-[#2563EB] text-[#2563EB] text-xs">
-                                                Level {user.level}
-                                            </Badge>
+
                                         </div>
                                         <div className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8]">
                                             Member ID: {user.studentId}
@@ -434,8 +476,16 @@ const UserProfilePage = () => {
                                     </div>
 
                                     {/* QR Code Placeholder */}
+                                    {/* QR Code */}
                                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                        <QrCode className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400" />
+                                        <QRCodeCanvas
+                                            value={qrData}
+                                            size={80}
+                                            bgColor="#ffffff"
+                                            fgColor="#000000"
+                                            level="M"
+                                            includeMargin={false}
+                                        />
                                     </div>
                                 </div>
 
@@ -618,7 +668,7 @@ const UserProfilePage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
+        <div className="min-h-screen bg-linear-to-b from-[#F8FAFC] to-white dark:from-[#020617] dark:to-[#0F172A]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 ">
                 {/* Header */}
                 <div className="mb-4 sm:mb-6 lg:mb-8">

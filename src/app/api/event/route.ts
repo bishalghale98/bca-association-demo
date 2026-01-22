@@ -1,9 +1,9 @@
 import eventController from "./event.controller";
 
 export function POST(req: Request, res: Response) {
-  return eventController.createEvent(req, res);
+  return eventController.createEvent(req);
 }
 
-export function GET(req: Request) {
-  return eventController.getAllEvents(req);
+export function GET() {
+  return eventController.getAllEvents();
 }
