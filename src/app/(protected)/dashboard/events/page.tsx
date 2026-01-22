@@ -131,7 +131,7 @@ const EventShowingPage = ({ role, onEdit }: IEventShowingPageprops) => {
 
 
 
-    if (error) {
+    if (error && fetchAllStatus == Status.ERROR) {
         return (
             <Error error={error} handleRefresh={handleRefresh} />
         )

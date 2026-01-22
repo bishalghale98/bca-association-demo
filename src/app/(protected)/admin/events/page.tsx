@@ -8,34 +8,44 @@ import { useEffect } from 'react';
 import EventShowingPage from '../../dashboard/events/page';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 
 const AdminEventPage = () => {
-    const searchParams = useSearchParams();
+    const searchParams = useSearchParams()
     const type = searchParams.get("type")
     const id = searchParams.get("id")
 
     const router = useRouter()
-    const { data: session } = useSession();
+    const { data: session } = useSession()
     const role = session?.user.role
 
     const dispatch = useAppDispatch()
-    const { event, events, fetchOneStatus } = useAppSelector((store) => store.event)
+    const { event, fetchOneStatus, error } = useAppSelector(
+        (store) => store.event
+    )
 
     useEffect(() => {
         dispatch(getAllEvents())
     }, [dispatch])
 
+    useEffect(() => {
+        if (id && type === 'edit' && event?.id !== id) {
+            dispatch(getEventById(id))
+        }
+    }, [id, type, event?.id, dispatch])
+
+    useEffect(() => {
+        if (error) {
+            toast(error, {
+                description: "Error while doing the action",
+            })
+        }
+    }, [error])
+
     const onEdit = (eventId: string) => {
         router.push(`/admin/events?type=edit&id=${eventId}`)
     }
 
-    useEffect(() => {
-        if (id && type === 'edit') {
-            dispatch(getEventById(id))
-        }
-    }, [id, type, dispatch])
-
-    // Handle back navigation
     const handleBack = () => {
         router.push('/admin/events')
     }
