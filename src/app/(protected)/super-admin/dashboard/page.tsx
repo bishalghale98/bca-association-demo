@@ -1,7 +1,7 @@
 import { AdminUser } from "@/components/layout/super-admin-dashboard"
 import { AdminList } from "@/components/super-admin/admin-list"
 import { ApiUsageChart } from "@/components/super-admin/api-usage-chart"
-import { RecentActivities } from "@/components/super-admin/recent-activities"
+import { RecentActivities, Activity as RecentActivity } from "@/components/super-admin/recent-activities"
 import { SystemHealthChart } from "@/components/super-admin/system-health-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +9,10 @@ import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { UserRole } from "@/types/user/enums"
 import { Activity, AlertCircle, ChevronRight, Cpu, Download, FileArchive, Settings, Shield, ShieldCheck, Users } from "lucide-react"
+import { SystemMetric } from "@/components/super-admin/system-health-chart"
 
 const DashboardContent = () => {
-    const systemMetrics = [
+    const systemMetrics: SystemMetric[] = [
         { id: 'cpu', name: 'CPU Usage', value: 65, max: 100, unit: '%', status: 'healthy', trend: 'stable' },
         { id: 'memory', name: 'Memory', value: 78, max: 100, unit: '%', status: 'warning', trend: 'up' },
         { id: 'storage', name: 'Storage', value: 45, max: 100, unit: '%', status: 'healthy', trend: 'stable' },
@@ -27,7 +28,7 @@ const DashboardContent = () => {
         { id: '4', name: 'Alice Brown', email: 'alice@example.com', role: UserRole.ADMIN, lastActive: '1 day ago', status: 'suspended', permissions: ['content'] },
     ]
 
-    const recentActivities = [
+    const recentActivities: RecentActivity[] = [
         { id: 1, action: 'System backup created', user: 'System', time: '2 minutes ago', status: 'success' },
         { id: 2, action: 'New admin user added', user: 'John Doe', time: '15 minutes ago', status: 'success' },
         { id: 3, action: 'Security policy updated', user: 'System', time: '1 hour ago', status: 'warning' },

@@ -19,7 +19,7 @@ import {
     Eye
 } from 'lucide-react'
 
-interface Activity {
+export interface Activity {
     id: number
     action: string
     user: string

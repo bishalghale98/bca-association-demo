@@ -17,7 +17,7 @@ import {
     XCircle
 } from 'lucide-react'
 
-interface SystemMetric {
+export interface SystemMetric {
     id: string
     name: string
     value: number

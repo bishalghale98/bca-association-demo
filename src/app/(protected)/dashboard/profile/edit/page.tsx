@@ -294,7 +294,7 @@ const EditProfilePage = () => {
                                                                 }
                                                             }}
                                                             {...field}
-                                                            value={value?.filename || ''}
+                                                            value={value?.name || ''}
                                                         />
                                                     </FormControl>
                                                 </label>
