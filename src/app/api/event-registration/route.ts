@@ -10,6 +10,6 @@ export function GET(req: Request) {
 }
 
 
-export function PATCH(req: Request) {
+export function PUT(req: Request) {
     return eventRegistration.updateEventAttendance(req);
 }

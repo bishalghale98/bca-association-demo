@@ -1,6 +1,6 @@
 import eventController from "../event.controller";
 
-export async function PATCH(req: Request, res: Response, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: Request, res: Response, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     return eventController.updateEvent(req, id);
 }

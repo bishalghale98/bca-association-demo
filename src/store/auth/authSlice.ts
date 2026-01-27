@@ -141,7 +141,7 @@ export const updateUser = (formData: any) => {
   return async (dispatch: AppDispatch) => {
     dispatch(updateStart());
     try {
-      const res = await api.patch("/user/profile", formData);
+      const res = await api.put("/user/profile", formData);
 
       if (res.data.success) {
         dispatch(updateSuccess(res.data.data));

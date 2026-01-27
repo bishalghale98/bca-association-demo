@@ -117,7 +117,7 @@ export const updateEvent = createAsyncThunk<
   { rejectValue: string }
 >("event/update", async ({ id, data }, { rejectWithValue }) => {
   try {
-    const res = await api.patch(`/event/${id}`, data);
+    const res = await api.put(`/event/${id}`, data);
     if (!res.data.success) return rejectWithValue(res.data.message);
     return res.data.data;
   } catch (err) {
