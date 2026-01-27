@@ -406,7 +406,6 @@ export default function UserDashboard() {
                             eventType={eventType}
                             setEventType={setEventType}
                             eventTypes={eventTypes}
-                            filteredEvents={filteredEvents}
                             markNotificationAsRead={markNotificationAsRead}
                         />
                     </div>

@@ -24,7 +24,10 @@ class EventController {
 
       if (!parsed.success) {
         return NextResponse.json(
-          { success: false, errors: parsed.error.flatten().fieldErrors },
+          {
+            success: false,
+            errors: parsed.error.flatten().fieldErrors
+          },
           { status: 422 }
         );
       }

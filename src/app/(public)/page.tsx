@@ -1,5 +1,3 @@
-import Footer from "@/components/common/footer";
-import Navbar from "@/components/common/nav-bar";
 import AboutSection from "@/components/home/about-section";
 import CTASection from "@/components/home/cta-section";
 import EventsSection from "@/components/home/event-section";

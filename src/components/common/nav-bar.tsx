@@ -21,18 +21,19 @@ import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const pathname = usePathname();
 
-    const { data: session , status} = useSession()
+    const { data: session, status } = useSession()
 
-    
+
 
     const isActive = (path: string) => pathname === path;
 
-    
+
     // Handle scroll effect for navbar
     useEffect(() => {
         const handleScroll = () => {
@@ -52,12 +53,12 @@ function Navbar() {
         { name: "Contact", path: "/contact", icon: Phone },
     ];
 
-    
+
 
     return (
         <nav
             className={cn(
-                "sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300",
+                "sticky top-0 z-50 w-full border-b backdrop-blur supports-backdrop-filter:bg-background/60 transition-all duration-300",
                 "bg-white/95 dark:bg-[#020617]/95",
                 "border-[#E5E7EB] dark:border-[#1E293B]",
                 isScrolled && "shadow-md"
@@ -67,9 +68,17 @@ function Navbar() {
                 <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-lg sm:rounded-xl flex items-center justify-center bg-gradient-to-br from-[#2563EB] to-[#38BDF8] shadow-md">
-                            <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-lg sm:rounded-xl flex items-center justify-center">
+                            <Image
+                                src="/bca-mmamc-association-logo.png"
+                                alt="Logo"
+                                width={50}
+                                height={50}
+                                className="rounded-lg"
+                            />
+
                         </div>
+
                         <div className="flex items-center">
                             <span className="text-lg sm:text-xl lg:text-2xl font-bold text-[#0F172A] dark:text-[#E5E7EB]">
                                 BCA
