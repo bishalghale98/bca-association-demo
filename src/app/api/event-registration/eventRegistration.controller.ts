@@ -8,8 +8,21 @@ import { NextRequest } from "next/server";
 
 class EventRegistration {
     async registerEvent(req: NextRequest) {
+
+        const session = await getServerSession(authOptions);
+
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { success: false, message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
         try {
-            const body = req.json();
+
+
+
+
+            const body = await req.json();
 
             const parsed = eventRegistrationSchema.safeParse(body);
 
@@ -23,13 +36,33 @@ class EventRegistration {
                 );
             }
 
+            const isRegistered = await prisma.eventRegistration.findUnique({
+                where: {
+                    eventId_userId: {
+                        eventId: parsed.data.eventId,
+                        userId: session.user.id,
+                    },
+                }
+            })
+
+            if (isRegistered) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message: "You have already registered for this event",
+                    },
+                    { status: 400 }
+                );
+            }
+
             const registration = await prisma.eventRegistration.create({
                 data: {
-                    fullName: parsed.data.name,
-                    phone: parsed.data.phone,
-                    message: parsed.data.message,
+                    fullName: parsed.data.fullName,
+                    phone: parsed.data.phoneNo,
+                    message: parsed.data?.message,
                     eventId: parsed.data.eventId,
                     userId: parsed.data.userId,
+                    email: session.user.email as string
                 },
             });
 
@@ -42,9 +75,6 @@ class EventRegistration {
                 { status: 201 }
             );
         } catch (error) {
-            // Duplicate registration (eventId + userId unique)
-
-
             console.error("Event registration error:", error);
 
             return NextResponse.json(
@@ -73,6 +103,9 @@ class EventRegistration {
             const myEvents = await prisma.eventRegistration.findMany({
                 where: {
                     userId: session.user.id
+                },
+                include: {
+                    event: true
                 }
             })
 

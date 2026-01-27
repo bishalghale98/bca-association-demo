@@ -1,17 +1,16 @@
 import { z } from "zod";
 
 export const eventRegistrationSchema = z.object({
-    name: z
+    fullName: z
         .string()
         .min(2, "Name must be at least 2 characters")
         .max(100, "Name is too long"),
 
-    phone: z
+    phoneNo: z
         .string()
         .trim()
         .min(7, "Phone number is too short")
-        .max(15, "Phone number is too long")
-        .optional(),
+        .max(15, "Phone number is too long"),
 
     message: z
         .string()

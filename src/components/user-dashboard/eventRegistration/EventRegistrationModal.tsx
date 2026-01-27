@@ -28,6 +28,9 @@ import { Loader2, CalendarDays, User, Phone, MessageSquare, X } from "lucide-rea
 import { toast } from "sonner"
 import { IEvent } from '@/store/event/eventSlice'
 import { useSession } from 'next-auth/react'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { registerEvent, resetRegisterStatus } from '@/store/event-registration/eventRegistrationSlice'
+import { Status } from '@/store/types'
 
 // Form validation schema
 const formSchema = z.object({
@@ -57,9 +60,9 @@ const EventRegistrationModal = ({
     onClose,
     open
 }: EventRegistrationModalProps) => {
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
     const { data: session } = useSession()
+    const dispatch = useAppDispatch()
+    const { registerStatus, error } = useAppSelector((store) => store.eventRegistration)
 
 
 
@@ -78,52 +81,53 @@ const EventRegistrationModal = ({
     useEffect(() => {
         if (open) {
             form.reset()
-            setIsSuccess(false)
         }
     }, [open, form])
 
+
+    useEffect(() => {
+        if (registerStatus === Status.ERROR) {
+            toast.error("Registration Failed", {
+                description: error,
+            });
+            dispatch(resetRegisterStatus())
+
+            return
+        }
+
+        if (registerStatus === Status.SUCCESS) {
+            toast.success("Registration Successful!", {
+                description: `You have successfully registered for "${event?.title}"`,
+            });
+            dispatch(resetRegisterStatus())
+            onClose()
+            return
+        }
+    }, [registerStatus, error, event, onClose, dispatch])
+
+
     // Handle form submission
     const onSubmit = async (data: FormValues) => {
-        if (!event) return
+        if (!event || !session?.user?.id) return;
 
-        setIsSubmitting(true)
+        const userId = session.user.id;
 
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500))
-
-            console.log('Registration data:', {
+        await dispatch(
+            registerEvent({
                 ...data,
                 eventId: event.id,
-                userId: session?.user?.id,
-                timestamp: new Date().toISOString(),
+                userId,
             })
+        )
 
-            // Show success
-            setIsSuccess(true)
-            toast.success("Registration Successful!", {
-                description: `You have successfully registered for "${event.title}"`,
-            })
 
-            // Reset form after delay
-            setTimeout(() => {
-                form.reset()
-                setIsSuccess(false)
-                onClose() // Close modal after success
-            }, 2000)
 
-        } catch (error) {
-            toast.error("Registration Failed", {
-                description: "Please try again later.",
-            })
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
+    };
+
 
     // Handle cancel/close
     const handleCancel = () => {
-        if (!isSubmitting) {
+        if (registerStatus !== Status.LOADING) {
             form.reset()
             onClose()
         }
@@ -135,7 +139,7 @@ const EventRegistrationModal = ({
     return (
         <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
             <DialogContent className="sm:max-w-md">
-                {!isSuccess ? (
+                {registerStatus !== Status.SUCCESS ? (
                     <>
                         <DialogHeader>
                             <div className="flex items-start justify-between">
@@ -173,7 +177,7 @@ const EventRegistrationModal = ({
                                                     placeholder="Enter your full name"
                                                     className="h-11"
                                                     {...field}
-                                                    disabled={isSubmitting}
+                                                    disabled={registerStatus === Status.LOADING}
                                                 />
                                             </FormControl>
                                             <FormDescription>
@@ -200,11 +204,11 @@ const EventRegistrationModal = ({
                                                     placeholder="Enter your phone number"
                                                     className="h-11"
                                                     {...field}
-                                                    disabled={isSubmitting}
+                                                    disabled={registerStatus === Status.LOADING}
                                                 />
                                             </FormControl>
                                             <FormDescription>
-                                                We'll contact you for event updates
+                                                We&apos;ll contact you for event updates
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
@@ -226,7 +230,7 @@ const EventRegistrationModal = ({
                                                     placeholder="Any special requirements or questions?"
                                                     className="min-h-[100px] resize-none"
                                                     {...field}
-                                                    disabled={isSubmitting}
+                                                    disabled={registerStatus === Status.LOADING}
                                                 />
                                             </FormControl>
                                             <FormDescription>
@@ -262,7 +266,7 @@ const EventRegistrationModal = ({
                                         </button>
                                     </p>
                                     <p>
-                                        You'll receive a confirmation email with event details.
+                                        You&apos;ll receive a confirmation email with event details.
                                     </p>
                                 </div>
 
@@ -271,17 +275,17 @@ const EventRegistrationModal = ({
                                         type="button"
                                         variant="outline"
                                         onClick={handleCancel}
-                                        disabled={isSubmitting}
+                                        disabled={registerStatus === Status.LOADING}
                                         className="flex-1"
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting}
+                                        disabled={registerStatus === Status.LOADING}
                                         className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
                                     >
-                                        {isSubmitting ? (
+                                        {registerStatus === Status.LOADING ? (
                                             <>
                                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                                 Registering...
@@ -316,18 +320,18 @@ const EventRegistrationModal = ({
                         </div>
                         <DialogTitle className="text-xl mb-2">Registration Confirmed!</DialogTitle>
                         <DialogDescription className="text-base">
-                            You're all set for <span className="font-semibold text-blue-600 dark:text-blue-400">{event.title}</span>
+                            You&apos;re all set for <span className="font-semibold text-blue-600 dark:text-blue-400">{event.title}</span>
                         </DialogDescription>
                         <div className="mt-6 space-y-3">
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                We've sent a confirmation to your registered phone number.
+                                We&apos;ve sent a confirmation to your registered Email Address.
                             </p>
                             <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4">
                                 <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
                                     Next Steps:
                                 </p>
                                 <ul className="text-sm text-gray-600 dark:text-gray-400 mt-2 space-y-1">
-                                    <li>• Check your SMS for event details</li>
+                                    <li>• Check your Email for event details</li>
                                     <li>• Arrive 15 minutes before the event</li>
                                     <li>• Bring your ID for verification</li>
                                 </ul>

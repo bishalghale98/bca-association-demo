@@ -288,24 +288,7 @@ export default function UserDashboard() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 text-center">
-                                <div className="p-2 rounded-lg bg-[#F8FAFC] dark:bg-[#0F172A]">
-                                    <div className="text-sm sm:text-base lg:text-lg font-bold text-[#0F172A] dark:text-[#E5E7EB]">
-                                        {userEvents.filter(e => e.status === 'attended' || e.status === 'completed').length}
-                                    </div>
-                                    <div className="text-[10px] sm:text-xs text-[#475569] dark:text-[#94A3B8]">
-                                        Events Attended
-                                    </div>
-                                </div>
-                                <div className="p-2 rounded-lg bg-[#F8FAFC] dark:bg-[#0F172A]">
-                                    <div className="text-sm sm:text-base lg:text-lg font-bold text-[#0F172A] dark:text-[#E5E7EB]">
-                                        {userEvents.filter(e => e.certificateUrl).length}
-                                    </div>
-                                    <div className="text-[10px] sm:text-xs text-[#475569] dark:text-[#94A3B8]">
-                                        Certificates
-                                    </div>
-                                </div>
-                            </div>
+
                         </CardContent>
                     </Card>
 
@@ -327,10 +310,10 @@ export default function UserDashboard() {
                                                 <action.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#2563EB] dark:text-[#3B82F6]" />
                                             </div>
                                             <div className="text-left min-w-0 flex-1">
-                                                <div className="font-medium text-xs sm:text-sm text-[#0F172A] dark:text-[#E5E7EB] truncate">
+                                                <div className="font-medium text-xs sm:text-sm text-[#0F172A] dark:text-[#E5E7EB] text-wrap">
                                                     {action.title}
                                                 </div>
-                                                <div className="text-[10px] sm:text-xs text-[#475569] dark:text-[#94A3B8] text-wrap">
+                                                <div className="text-[10px]  sm:text-xs text-[#475569] dark:text-[#94A3B8] text-wrap">
                                                     {action.description}
                                                 </div>
                                             </div>
@@ -353,7 +336,6 @@ export default function UserDashboard() {
                         notifications={notifications}
                         setActiveTab={setActiveTab}
                         unreadNotifications={unreadNotifications}
-                        userEvents={userEvents}
                     />
 
                     {/* Mobile Content */}

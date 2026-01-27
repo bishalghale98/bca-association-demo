@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authSlice from "./auth/authSlice";
 import eventSlice from './event/eventSlice';
+import eventRegistrationSlice from "./event-registration/eventRegistrationSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       auth: authSlice,
-      event: eventSlice
+      event: eventSlice,
+      eventRegistration: eventRegistrationSlice,
     },
   });
 };

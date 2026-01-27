@@ -706,7 +706,7 @@ const UserProfilePage = () => {
                                 <div className="p-4 lg:p-6 border-b border-[#E5E7EB] dark:border-[#1E293B]">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="w-10 h-10 lg:w-12 lg:h-12">
-                                            <AvatarImage src={user.avatarUrl || "https://static.vecteezy.com/system/resources/thumbnails/022/014/184/small/user-icon-member-login-isolated-vector.jpg"} />
+                                            <AvatarImage src={user?.avatarUrl || "https://static.vecteezy.com/system/resources/thumbnails/022/014/184/small/user-icon-member-login-isolated-vector.jpg"} />
                                             <AvatarFallback className="bg-[#2563EB] text-white">
                                                 {user.name.split(' ').map(n => n[0]).join('')}
                                             </AvatarFallback>

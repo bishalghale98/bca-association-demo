@@ -32,6 +32,8 @@ import EventCard from "./event/card";
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { getAllEvents } from "@/store/event/eventSlice";
+import { getMyRegisteredEvents } from "@/store/event-registration/eventRegistrationSlice";
+import { formatDateTime } from "@/utils/formatDate";
 
 /* ================= PROPS ================= */
 
@@ -89,12 +91,18 @@ const MobileDashboard = ({
 
     const dispatch = useAppDispatch()
     const { events } = useAppSelector((store) => store.event)
+    const { registerStatus, registrations } = useAppSelector((store) => store.eventRegistration)
 
 
 
     useEffect(() => {
         dispatch(getAllEvents())
+        dispatch(getMyRegisteredEvents())
     }, [dispatch])
+
+
+
+
 
     const filteredEvents = events?.filter((event) => {
         const today = new Date();
@@ -132,10 +140,18 @@ const MobileDashboard = ({
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="p-2 sm:p-3 rounded-lg bg-[#F8FAFC] dark:bg-[#0F172A] text-center">
                                         <div className="text-lg sm:text-xl font-bold text-[#0F172A] dark:text-[#E5E7EB]">
-                                            {userEvents.filter(e => e.status === 'registered' || e.status === 'upcoming').length}
+                                            {registrations.filter(e => e.attended === true).length}
                                         </div>
                                         <div className="text-[10px] sm:text-xs text-[#475569] dark:text-[#94A3B8] mt-0.5">
-                                            Upcoming Events
+                                            Events Attended
+                                        </div>
+                                    </div>
+                                    <div className="p-2 sm:p-3 rounded-lg bg-[#F8FAFC] dark:bg-[#0F172A] text-center">
+                                        <div className="text-lg sm:text-xl font-bold text-[#0F172A] dark:text-[#E5E7EB]">
+                                            {registrations.length}
+                                        </div>
+                                        <div className="text-[10px] sm:text-xs text-[#475569] dark:text-[#94A3B8] mt-0.5">
+                                            Events Registered
                                         </div>
                                     </div>
                                     <div className="p-2 sm:p-3 rounded-lg bg-[#F8FAFC] dark:bg-[#0F172A] text-center">
@@ -241,50 +257,38 @@ const MobileDashboard = ({
                         </div>
 
                         <div className="space-y-2 sm:space-y-3">
-                            {/* {filteredEvents.map((event) => (
-                                <Card key={event.id} className="border-[#E5E7EB] dark:border-[#1E293B]">
+                            {registrations.map((registration) => (
+                                <Card key={registration.id} className="border-[#E5E7EB] dark:border-[#1E293B]">
                                     <CardContent className="p-2.5 sm:p-3">
                                         <div className="space-y-1.5 sm:space-y-2">
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge variant="outline" className="border-[#2563EB] text-[#2563EB] text-[10px] sm:text-xs px-1.5 sm:px-2 py-0">
-                                                    {event.type}
+                                                    {registration.event.type}
                                                 </Badge>
                                                 <Badge className={cn(
                                                     "border-0 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0",
-                                                    event.status === 'registered' ? "bg-[#2563EB]/10 text-[#2563EB]" :
-                                                        event.status === 'attended' ? "bg-[#22C55E]/10 text-[#22C55E]" :
-                                                            event.status === 'completed' ? "bg-[#8B5CF6]/10 text-[#8B5CF6]" :
-                                                                "bg-[#F59E0B]/10 text-[#F59E0B]"
+                                                    !registration.attended ? "bg-[#2563EB]/10 text-[#2563EB]" :
+                                                        "bg-[#22C55E]/10 text-[#22C55E]"
                                                 )}>
-                                                    {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                                    {registration.attended ? "Attended" : "Registered"}
                                                 </Badge>
                                             </div>
                                             <h4 className="font-bold text-xs sm:text-sm text-[#0F172A] dark:text-[#E5E7EB] line-clamp-2">
-                                                {event.title}
+                                                {registration.event.title}
                                             </h4>
                                             <div className="flex items-center text-[11px] sm:text-xs text-[#475569] dark:text-[#94A3B8]">
                                                 <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
-                                                {event.date}
+                                                {registration.event.eventDate ? (formatDateTime(registration.event.eventDate).fullDateTime)
+                                                    :
+                                                    (formatDateTime(registration.event.startDate!).fullDateTime + " to " + formatDateTime(registration.event.endDate!).fullDateTime)}
                                             </div>
-                                            <div className="flex gap-2">
-                                                {event.certificateUrl && (
-                                                    <Link href={event.certificateUrl} className="flex-1">
-                                                        <Button size="sm" variant="outline" className="w-full text-[11px] sm:text-xs h-7 sm:h-8">
-                                                            <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
-                                                            Certificate
-                                                        </Button>
-                                                    </Link>
-                                                )}
-                                                <Button size="sm" variant="default" className="flex-1 text-[11px] sm:text-xs h-7 sm:h-8">
-                                                    Details
-                                                </Button>
-                                            </div>
+
                                         </div>
                                     </CardContent>
                                 </Card>
-                            ))} */}
+                            ))}
                         </div>
-                    </div>
+                    </div >
                 );
 
             case 'documents':

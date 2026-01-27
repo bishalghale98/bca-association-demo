@@ -111,6 +111,7 @@ model EventRegistration {
   // form fields
   fullName String
   phone    String?
+  email    String   
   message  String?
   attended Boolean @default(false)
 
@@ -121,5 +122,5 @@ model EventRegistration {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([eventId, userId]) // prevent duplicate registration
+  @@unique([eventId, userId]) 
 }
