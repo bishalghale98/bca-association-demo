@@ -11,8 +11,8 @@ import AchievementsTabContent from './desktopTabContent/achievements';
 interface DesktopTabsProps {
     activeTab: string
     setActiveTab: (value: string) => void
-    documents: Document[]
-    notifications: Notification[]
+    documents: any[]
+    notifications: any[]
     unreadNotifications: number
     achievements: any[]
     markNotificationAsRead: any
