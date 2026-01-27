@@ -4,13 +4,13 @@ import EventForm from '@/components/admin/event/event-form'
 import { getAllEvents, getEventById, IEvent, Status } from '@/store/event/eventSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import EventShowingPage from '../../dashboard/events/page';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 
-const AdminEventPage = () => {
+const AdminEventContent = () => {
     const searchParams = useSearchParams()
     const type = searchParams.get("type")
     const id = searchParams.get("id")
@@ -213,4 +213,10 @@ const AdminEventPage = () => {
     )
 }
 
-export default AdminEventPage
+export default function AdminEventPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminEventContent />
+        </Suspense>
+    )
+}

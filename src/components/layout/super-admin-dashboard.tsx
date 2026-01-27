@@ -153,6 +153,8 @@ const MobileHeader = ({
         { id: 'maintenance', label: 'Maintenance', icon: Settings, href: '/super-admin/maintenance' },
     ]
 
+    const pathname = usePathname()
+
     return (
         <header className="lg:hidden sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -228,8 +230,8 @@ const MobileHeader = ({
                                     {mobileMenuItems.map((item) => {
                                         const Icon = item.icon
                                         const isActive =
-                                            location.pathname === item.href ||
-                                            location.pathname.startsWith(`${item.href}/`)
+                                            pathname === item.href ||
+                                            pathname.startsWith(`${item.href}/`)
 
                                         return (
                                             <Link
