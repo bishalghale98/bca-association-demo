@@ -154,7 +154,10 @@ export default function UserDashboard() {
     };
 
     const unreadNotifications = notifications.filter(n => !n.read).length;
-    const progressPercentage = (session?.user?.points as number / session?.user?.nextLevelPoints) * 100;
+    let progressPercentage = 0;
+    if (session?.user.points && session?.user.nextLevelPoints) {
+        progressPercentage = (session?.user?.points as number / session?.user?.nextLevelPoints) * 100;
+    }
 
     const mobileTabConfig = [
         { id: 'overview', label: 'Overview', icon: Home },
@@ -271,7 +274,9 @@ export default function UserDashboard() {
 
                             <div className="text-center">
                                 <div className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8]">
-                                    {session?.user.nextLevelPoints - session?.user.points} points to Level {session?.user.level + 1}
+                                    {(session?.user.nextLevelPoints || session?.user.points) && (session?.user.nextLevelPoints - session?.user.points) + " points to    Level " + (session?.user.level + 1)}
+
+
                                 </div>
                             </div>
 
