@@ -37,6 +37,7 @@ import { MembershipStatus } from '@/types/user/enums';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getAllEvents } from '@/store/event/eventSlice';
 import MobileDashboard from '@/components/user-dashboard/mobile-dashboard';
+import Image from 'next/image';
 
 export type UserRole = 'member' | 'admin' | 'super_admin';
 export type EventStatus = 'registered' | 'attended' | 'completed' | 'upcoming';
@@ -186,6 +187,13 @@ export default function UserDashboard() {
                         <CardContent className="p-4 sm:p-5 lg:p-6">
                             <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4">
                                 <Avatar className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-2 sm:border-3 lg:border-4 border-white dark:border-[#0F172A]">
+
+                                    <Image
+                                        src={session?.user.avatarUrl || "/avatar.png"}
+                                        alt="Avatar" fill
+                                        className="object-cover"
+                                    />
+
                                     <AvatarFallback className="bg-[#2563EB] text-white text-lg sm:text-xl lg:text-2xl">
                                         {session?.user.name.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
@@ -355,6 +363,12 @@ export default function UserDashboard() {
                             <CardContent className="p-3 sm:p-4">
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-white dark:border-[#0F172A] shrink-0">
+                                        <Image
+                                            src={session?.user.avatarUrl || "/avatar.png"}
+                                            alt="Avatar"
+                                            fill
+                                            className="object-cover"
+                                        />
                                         <AvatarFallback className="bg-[#2563EB] text-white text-sm sm:text-base">
                                             {session?.user.name.split(' ').map(n => n[0]).join('')}
                                         </AvatarFallback>

@@ -14,13 +14,14 @@ datasource db {
 
 model User {
   // 🔑 Core Identity
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  email     String   @unique
-  phone     String?
-  avatarUrl String?
-  role      UserRole @default(MEMBER)
-  password  String
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  email          String   @unique
+  phone          String?
+  avatarUrl      String?
+  avatarPublicId String?
+  role           UserRole @default(MEMBER)
+  password       String
 
   // 🎓 Academic Information
   studentId      String  @unique

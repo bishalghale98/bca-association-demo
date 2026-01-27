@@ -83,12 +83,12 @@ export default function LoginPage() {
   });
 
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = (data: LoginFormValues) => {
     startLoginTransition(async () => {
       try {
         const res = await signIn("credentials", {
           redirect: false,
-          email: data.email,
+          email: data.email.toLowerCase(),
           password: data.password,
         });
 

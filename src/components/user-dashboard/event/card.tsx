@@ -11,15 +11,14 @@ import {
     UserIcon,
     CalendarClockIcon,
     CalendarRangeIcon,
-    ChevronRightIcon,
-    ExternalLinkIcon,
+
     UsersIcon,
     EditIcon,
     TrashIcon,
 } from 'lucide-react';
-import { UserRole } from '@/types/user/enums';
 import { DeleteModal } from '@/components/common/delete-confirmation';
 import { useAppDispatch } from '@/store/hooks';
+import EventRegistrationModal from '../eventRegistration/EventRegistrationModal';
 
 
 interface EventCardProps {
@@ -39,11 +38,11 @@ const EventCard: React.FC<EventCardProps> = ({
     registrationsCount = 0,
     role,
     onEdit,
-    onDelete,
     viewMode = 'grid'
 }) => {
-    const [isHovered, setIsHovered] = useState(false);
     const dispatch = useAppDispatch()
+    const [openModal, setOpenModal] = useState(false)
+    const [registerEvent, setRegisterEvent] = useState<IEvent | null>(null)
 
     const formatDateTime = (dateString: string) => {
         const date = new Date(dateString);
@@ -118,12 +117,10 @@ const EventCard: React.FC<EventCardProps> = ({
         return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     };
 
-    const handleRegister = (eventId: string) => {
-        console.log('Register for event:', eventId);
-    };
-
-    const handleViewDetails = () => {
-        console.log('View details for:', event.id);
+    const handleRegister = (event: IEvent) => {
+        console.log('Register for event:', event.id);
+        setOpenModal(true)
+        setRegisterEvent(event)
     };
 
     const handleEdit = (e: React.MouseEvent) => {
@@ -149,8 +146,7 @@ const EventCard: React.FC<EventCardProps> = ({
         return (
             <Card
                 className={`group relative overflow-hidden border rounded-lg hover:shadow-md transition-all duration-200 ${className}`}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+
             >
                 <div className="relative p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -267,7 +263,7 @@ const EventCard: React.FC<EventCardProps> = ({
                         <div className="flex items-center gap-2">
                             {!isPastEvent() && (
                                 <Button
-                                    onClick={() => handleRegister(event.id)}
+                                    onClick={() => handleRegister(event)}
                                     size="sm"
                                 >
                                     Register
@@ -284,8 +280,7 @@ const EventCard: React.FC<EventCardProps> = ({
     return (
         <Card
             className={`group relative overflow-hidden border rounded-lg hover:shadow-lg transition-shadow duration-200 ${className}`}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+
         >
             {/* Status badges */}
             <div className="absolute top-4 right-4 z-10">
@@ -396,7 +391,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
 
                         <Button
-                            onClick={() => handleRegister(event.id)}
+                            onClick={() => handleRegister(event)}
                             className="flex-1"
                             disabled={isPastEvent()}
                         >
@@ -406,6 +401,20 @@ const EventCard: React.FC<EventCardProps> = ({
                     </div>
                 </div>
             </div>
+
+
+            {
+                openModal && (
+                    <EventRegistrationModal
+                        onClose={() => { setOpenModal(false); setRegisterEvent(null) }}
+                        event={registerEvent}
+                        open={openModal}
+                    />
+                )
+            }
+
+
+
             {itemToDelete && (
                 <DeleteModal
                     isOpen={isModalOpen}

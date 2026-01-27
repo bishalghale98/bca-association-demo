@@ -39,11 +39,9 @@ import { Gender, MembershipStatus, UserRole } from '@/types/user/enums';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
-import { api } from '@/lib/api';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { updateUser, AllStatus, resetState } from '@/store/auth/authSlice';
 
-// Define validation schema
 const profileFormSchema = z.object({
     avatar: z.instanceof(File).optional().nullable(),
     phone: z.string().optional().nullable(),
@@ -123,7 +121,6 @@ const EditProfilePage = () => {
                         ...updatedUser
                     }
                 }).then(() => {
-                    // Redirect to profile page after successful update
                     toast.success("Profile successfully updated");
 
                     dispatch(resetState())
@@ -137,7 +134,7 @@ const EditProfilePage = () => {
             toast.error(error || "Failed to update profile");
             setIsSubmitting(false);
         }
-    }, [allStatus, error, updatedUser, update, session, router]);
+    }, [allStatus, error, updatedUser, update, session, router, dispatch]);
 
     // Update avatar preview
     const watchedAvatar = form.watch('avatar');
@@ -291,10 +288,11 @@ const EditProfilePage = () => {
                                                                         return;
                                                                     }
                                                                     onChange(file);
+                                                                } else {
+                                                                    onChange(null); // Clear the field
                                                                 }
                                                             }}
                                                             {...field}
-                                                            value={value?.name || ''}
                                                         />
                                                     </FormControl>
                                                 </label>

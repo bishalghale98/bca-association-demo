@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import path from "path";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 import { NextRequest } from "next/server";
+import cloudinary from "@/lib/cloudinary";
 
 class ProfileController {
   async updateProfile(req: NextRequest) {
@@ -18,13 +19,27 @@ class ProfileController {
         );
       }
 
+      const existingUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { avatarPublicId: true },
+      })
+
+
       const formData = await req.formData();
 
-      const avatar = formData.get("avatarUrl") as File | null;
+
+      const avatar = formData.get("avatar") as File | null;
       const dataStr = formData.get("data")?.toString() || "{}";
       const otherData = JSON.parse(dataStr);
 
+      if (existingUser?.avatarPublicId && avatar) {
+        await cloudinary.uploader.destroy(existingUser?.avatarPublicId as string)
+      }
+
+
+
       let avatarUrl: string | undefined;
+      let avatarPublicId: string | undefined;
 
       // ===============================
       // 📤 Upload avatar if exists
@@ -47,6 +62,7 @@ class ProfileController {
         );
 
         avatarUrl = uploadResult.secure_url;
+        avatarPublicId = uploadResult.public_id;
       }
 
       // ===============================
@@ -68,7 +84,11 @@ class ProfileController {
           bloodGroup: otherData.bloodGroup,
           emergencyContact: otherData.emergencyContact,
 
-          ...(avatarUrl && { avatarUrl }),
+          ...(avatarUrl && {
+            avatarUrl,
+            avatarPublicId,
+          }),
+
         },
       });
 
