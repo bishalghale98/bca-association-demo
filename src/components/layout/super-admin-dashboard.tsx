@@ -941,7 +941,7 @@ const SuperAdminDashboard = ({ children }: SuperAdminDashboardProps) => {
 
                                 {/* Main content */}
                                 <div className="rounded-lg">
-                                    {children || <DashboardContent />}
+                                    {children}
                                 </div>
                             </div>
                         </div>
