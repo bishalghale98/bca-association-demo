@@ -113,14 +113,14 @@ export default function UserDashboard() {
 
 
 
-    const notifications: Notification[] = [
+    const notifications: any[] = [
         { id: 1, title: "Event Registration Confirmed", message: "Your registration for Annual Hackathon is confirmed", type: "event", time: "2 hours ago", read: false },
         { id: 2, title: "Certificate Available", message: "Download your certificate for AI Workshop", type: "academic", time: "1 day ago", read: false },
         { id: 3, title: "Membership Renewal", message: "Your membership expires in 15 days", type: "membership", time: "2 days ago", read: true },
         { id: 4, title: "System Maintenance", message: "Portal will be down for maintenance", type: "system", time: "3 days ago", read: true },
     ];
 
-    const documents: Document[] = [
+    const documents: any[] = [
         { id: 1, title: "Academic Calendar 2024-25", type: "Academic", uploadedDate: "2024-08-01", downloadUrl: "#" },
         { id: 2, title: "Code of Conduct", type: "Association", uploadedDate: "2024-07-15", downloadUrl: "#" },
         { id: 3, title: "Event Guidelines", type: "Event", uploadedDate: "2024-09-10", downloadUrl: "#" },
