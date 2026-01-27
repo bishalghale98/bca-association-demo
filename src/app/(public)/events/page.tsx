@@ -43,7 +43,7 @@ interface Event {
     time: string;
     venue: string;
     type: 'technical' | 'workshop' | 'seminar' | 'competition' | 'cultural';
-    status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+    status?: 'ongoing' | 'completed' | 'cancelled' | string;
     registeredUsers: number;
     maxCapacity: number;
     organizer: string;
@@ -208,10 +208,21 @@ export default function EventsPage() {
         const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             event.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesType = eventType === 'all' ||
-            eventType === 'upcoming' ? event.status === 'upcoming' || event.status === 'ongoing' :
-            eventType === 'past' ? event.status === 'completed' || event.status === 'cancelled' :
-                event.type === eventType;
+        const matchesType = (() => {
+            if (eventType === 'all') return true;
+
+            if (eventType === 'upcoming') {
+                return event.status === 'upcoming' || event.status === 'ongoing';
+            }
+
+            if (eventType === 'past') {
+                return event.status === 'completed' || event.status === 'cancelled';
+            }
+
+            return event.type === eventType;
+        })();
+
+
 
         return matchesSearch && matchesType;
     });
@@ -487,13 +498,14 @@ export default function EventsPage() {
                                                 >
                                                     <StatusIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                                                     <span className="hidden xs:inline">
-                                                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                                        {event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : ''}
+
                                                     </span>
                                                     <span className="xs:hidden">
-                                                        {event.status === 'upcoming' ? 'Upcoming' :
-                                                            event.status === 'ongoing' ? 'Ongoing' :
-                                                                event.status === 'completed' ? 'Past' :
-                                                                    event.status === 'cancelled' ? 'Cancelled' : event?.status?.charAt(0).toUpperCase()}
+                                                        {event.status === 'ongoing' ? 'Ongoing' :
+                                                            event.status === 'completed' ? 'Past' :
+                                                                event.status === 'cancelled' ? 'Cancelled' :
+                                                                    event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : ''}
                                                     </span>
                                                 </Badge>
                                             </div>
