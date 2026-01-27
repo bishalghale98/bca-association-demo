@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/db";
 import { RegisterUserSchema } from "@/schema/auth.schema";
 import bcrypt from "bcryptjs";
+import { NextRequest } from "next/server";
 
 class AuthController {
-  async userRegister(req: Request) {
+  async userRegister(req: NextRequest) {
     try {
       const body = await req.json();
 

@@ -2,13 +2,13 @@ import { prisma } from "@/lib/db";
 import { eventApiSchema } from "@/schema/event/createEvent";
 import { eventUpdateApiSchema } from "@/schema/event/updateEvent";
 import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/option";
 import { UserRole } from "@/types/user/enums";
 
 class EventController {
   // ================= CREATE =================
-  async createEvent(req: Request) {
+  async createEvent(req: NextRequest) {
     try {
       const session = await getServerSession(authOptions);
 
@@ -80,7 +80,7 @@ class EventController {
   }
 
   // ================= UPDATE =================
-  async updateEvent(req: Request, id: string) {
+  async updateEvent(req: NextRequest, id: string) {
     try {
       const session = await getServerSession(authOptions);
 
@@ -138,7 +138,7 @@ class EventController {
   }
 
   // ================= DELETE =================
-  async deleteEvent(req: Request, id: string) {
+  async deleteEvent(req: NextRequest, id: string) {
     try {
       const session = await getServerSession(authOptions);
 
@@ -182,7 +182,7 @@ class EventController {
     }
   }
 
-  async getEvent(req: Request, id: string) {
+  async getEvent(req: NextRequest, id: string) {
     try {
       if (!id) {
         return NextResponse.json({

@@ -1,7 +1,8 @@
+import { NextRequest } from "next/server";
 import eventController from "../event.controller";
 
 export async function PUT(
-    req: Request,
+    req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     const { id } = params
@@ -11,7 +12,7 @@ export async function PUT(
 
 
 export async function DELETE(
-    req: Request,
+    req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     const { id } = params
@@ -20,7 +21,7 @@ export async function DELETE(
 
 
 export async function GET(
-    req: Request,
+    req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     const { id } = params

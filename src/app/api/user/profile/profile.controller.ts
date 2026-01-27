@@ -3,9 +3,10 @@ import { authOptions } from "../../auth/[...nextauth]/option";
 import { prisma } from "@/lib/db";
 import path from "path";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import { NextRequest } from "next/server";
 
 class ProfileController {
-  async updateProfile(req: Request) {
+  async updateProfile(req: NextRequest) {
     try {
       // 🔐 Auth check
       const session = await getServerSession(authOptions);

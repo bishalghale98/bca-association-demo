@@ -4,9 +4,10 @@ import { eventRegistrationSchema } from "@/schema/eventRegistration/create";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/option";
 import { UserRole } from "@/types/user/enums";
+import { NextRequest } from "next/server";
 
 class EventRegistration {
-    async registerEvent(req: Request) {
+    async registerEvent(req: NextRequest) {
         try {
             const body = req.json();
 
@@ -56,7 +57,7 @@ class EventRegistration {
         }
     }
 
-    async getAllRegisterEvent(req: Request) {
+    async getAllRegisterEvent(req: NextRequest) {
         try {
 
             const session = await getServerSession(authOptions);
@@ -99,7 +100,7 @@ class EventRegistration {
         }
     }
 
-    async updateEventAttendance(req: Request) {
+    async updateEventAttendance(req: NextRequest) {
         try {
 
             const session = await getServerSession(authOptions);
