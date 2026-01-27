@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db";
 import { eventRegistrationSchema } from "@/schema/eventRegistration/create";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/option";

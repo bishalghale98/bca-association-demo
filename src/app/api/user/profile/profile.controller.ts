@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/option";
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db";
 import path from "path";
 import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 import { NextRequest } from "next/server";

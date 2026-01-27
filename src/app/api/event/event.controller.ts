@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db";
 import { eventApiSchema } from "@/schema/event/createEvent";
 import { eventUpdateApiSchema } from "@/schema/event/updateEvent";
 import { getServerSession } from "next-auth";
