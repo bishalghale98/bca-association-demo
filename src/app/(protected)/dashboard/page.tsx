@@ -36,7 +36,6 @@ import { useSession } from 'next-auth/react';
 import { MembershipStatus } from '@/types/user/enums';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getAllEvents } from '@/store/event/eventSlice';
-import MobileContent from '@/components/user-dashboard/mobile-content';
 import MobileDashboard from '@/components/user-dashboard/mobile-dashboard';
 
 export type UserRole = 'member' | 'admin' | 'super_admin';
