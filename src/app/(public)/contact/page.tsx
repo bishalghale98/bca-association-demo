@@ -46,7 +46,7 @@ const formSchema = z.object({
     category: z.enum(['general', 'academic', 'technical', 'membership', 'event', 'feedback']),
     subject: z.string().min(5, "Subject must be at least 5 characters").max(200),
     message: z.string().min(10, "Message must be at least 10 characters").max(5000),
-    isMember: z.boolean().default(false),
+    isMember: z.boolean().optional(),
     agreeToTerms: z.boolean().refine(val => val === true, {
         message: "You must agree to the terms and conditions",
     }),
