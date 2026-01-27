@@ -3,9 +3,9 @@ import eventController from "../event.controller";
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params
+    const { id } = await context.params
     return eventController.updateEvent(req, id);
 }
 
@@ -13,17 +13,17 @@ export async function PUT(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params
+    const { id } = await context.params
     return eventController.deleteEvent(req, id);
 }
 
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params
+    const { id } = await context.params
     return eventController.getEvent(req, id);
 }
