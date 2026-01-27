@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { eventRegistrationSchema } from "@/schema/eventRegistration/create";
-import { Prisma } from "@/generated/prisma/client"; // or "@prisma/client"
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/option";
 import { UserRole } from "@/types/user/enums";
@@ -43,18 +42,7 @@ class EventRegistration {
             );
         } catch (error) {
             // Duplicate registration (eventId + userId unique)
-            if (
-                error instanceof Prisma.PrismaClientKnownRequestError &&
-                error.code === "P2002"
-            ) {
-                return NextResponse.json(
-                    {
-                        success: false,
-                        message: "You have already registered for this event",
-                    },
-                    { status: 409 }
-                );
-            }
+
 
             console.error("Event registration error:", error);
 
