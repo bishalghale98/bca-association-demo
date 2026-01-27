@@ -224,7 +224,7 @@ export function ApiUsageChart({ timeRange = 'day' }: ApiUsageChartProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Select value={selectedRange} onValueChange={setSelectedRange}>
+                    <Select value={selectedRange} onValueChange={(value) => setSelectedRange(value as 'hour' | 'day' | 'week' | 'month')}>
                         <SelectTrigger className="w-[140px]">
                             <SelectValue placeholder="Time Range" />
                         </SelectTrigger>
