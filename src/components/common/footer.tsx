@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Facebook, GraduationCap, Instagram, Linkedin, Mail, MapPin, Twitter } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 function Footer() {
@@ -16,9 +17,15 @@ function Footer() {
                         <div className="flex items-center space-x-2 mb-4">
                             <div className={cn(
                                 "w-10 h-10 rounded-lg flex items-center justify-center",
-                                "bg-[#2563EB] dark:bg-[#3B82F6]"
+                                "bg-[#2563EB] dark:bg-[#3B82F6] border"
                             )}>
-                                <GraduationCap className="w-6 h-6 text-white" />
+                                <Image
+                                    src="/bca-mmamc-association-logo.png"
+                                    alt="Logo"
+                                    width={50}
+                                    height={50}
+                                    className="rounded-lg w-full h-full object-cover"
+                                />
                             </div>
                             <div>
                                 <span className={cn(

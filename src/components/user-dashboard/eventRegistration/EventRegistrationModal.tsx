@@ -70,8 +70,8 @@ const EventRegistrationModal = ({
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            fullName: "",
-            phoneNo: "",
+            fullName: session?.user?.name || "",
+            phoneNo: session?.user?.phone || "",
             message: "",
         },
         mode: "onChange",

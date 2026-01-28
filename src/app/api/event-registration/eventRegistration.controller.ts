@@ -136,6 +136,7 @@ class EventRegistration {
     async updateEventAttendance(req: NextRequest) {
         try {
 
+
             const session = await getServerSession(authOptions);
 
             if (!session) {
@@ -157,14 +158,14 @@ class EventRegistration {
 
             const { attended, id } = await req.json()
 
-            if (!attended || !id) {
+            if (!id) {
                 return NextResponse.json({
                     success: false,
-                    message: "Please provide status of attended"
+                    message: "Please provide event registration id"
                 })
             }
 
-            const updateEventRegister = prisma.eventRegistration.update({
+            const updateEventRegister = await prisma.eventRegistration.update({
                 where: {
                     id
                 },
@@ -185,6 +186,44 @@ class EventRegistration {
             console.log(error)
             return NextResponse.json(
                 { success: false, message: "Failed to fetch events" },
+                { status: 500 }
+            );
+        }
+    }
+
+
+    async getRegistrationsByEventId(req: NextRequest, eventId: string) {
+        try {
+
+            const session = await getServerSession(authOptions);
+
+            if (!session?.user?.id) {
+                return NextResponse.json(
+                    { success: false, message: "Unauthorized" },
+                    { status: 401 }
+                );
+            }
+
+            const registrations = await prisma.eventRegistration.findMany({
+                where: {
+                    eventId
+                },
+                include: {
+                    event: true,
+                    user: true
+                }
+            })
+
+            return NextResponse.json({
+                success: true,
+                message: "Registrations fetched successfully",
+                data: registrations
+            })
+
+        } catch (error) {
+            console.log(error)
+            return NextResponse.json(
+                { success: false, message: "Failed to fetch registrations" },
                 { status: 500 }
             );
         }

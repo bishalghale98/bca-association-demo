@@ -55,11 +55,10 @@ const AdminBottomNav = () => {
     const pathname = usePathname()
 
     const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
         { id: 'users', label: 'Users', icon: Users, href: '/admin/users' },
-        { id: 'analytics', label: 'Stats', icon: BarChart3, href: '/admin/analytics' },
+        { id: 'event-register', label: 'Events', icon: Calendar, href: '/admin/event-register' },
         { id: 'content', label: 'Content', icon: FileText, href: '/admin/content' },
-        { id: 'profile', label: 'Profile', icon: UserCog, href: '/admin/profile' },
     ]
 
     return (
@@ -86,7 +85,7 @@ const AdminBottomNav = () => {
                                                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></div>
                                             )}
                                         </div>
-                                        <span className="text-xs font-medium transition-all duration-300 group-hover:font-semibold">
+                                        <span className="text-xs text-wrap font-medium transition-all duration-300 group-hover:font-semibold">
                                             {item.label}
                                         </span>
                                     </Link>
@@ -107,21 +106,14 @@ const AdminBottomNav = () => {
 const MobileHeader = ({
     getCurrentPageTitle,
     handleLogout,
+    menuItems,
     pathname,
     session,
     unreadNotifications
 }: any) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-    const mobileMenuItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-        { id: 'users', label: 'User Management', icon: Users, href: '/admin/users' },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin/analytics' },
-        { id: 'content', label: 'Content Management', icon: FileText, href: '/admin/content' },
-        { id: 'events', label: 'Events', icon: Calendar, href: '/admin/events' },
-        { id: 'database', label: 'Database', icon: Database, href: '/admin/database' },
-        { id: 'settings', label: 'Settings', icon: SettingsIcon, href: '/admin/settings' },
-    ]
+    const mobileMenuItems = menuItems
 
     const supportItems = [
         { id: 'resources', label: 'Resources', icon: BookOpen, href: '/resources', external: true },
@@ -511,6 +503,7 @@ const DesktopSidebar = ({
 const DesktopHeader = ({
     getCurrentPageTitle,
     handleLogout,
+    menuItems,
     unreadNotifications,
     session,
     sidebarCollapsed
@@ -649,7 +642,7 @@ const AdminDashboardLayout = ({ children }: AdminDashboardLayoutProps) => {
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
         { id: 'users', label: 'User Management', icon: Users, href: '/admin/users' },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin/analytics' },
+        { id: 'event-register', label: 'Event Register', icon: Calendar, href: '/admin/event-register' },
         { id: 'content', label: 'Content', icon: FileText, href: '/admin/content' },
         { id: 'events', label: 'Events', icon: Calendar, href: '/admin/events' },
         { id: 'database', label: 'Database', icon: Database, href: '/admin/database' },
@@ -745,6 +738,7 @@ const AdminDashboardLayout = ({ children }: AdminDashboardLayoutProps) => {
                     getCurrentPageTitle={getCurrentPageTitle}
                     handleLogout={handleLogout}
                     session={session}
+                    menuItems={menuItems}
                     pathname={pathname}
                     unreadNotifications={unreadNotifications}
                 />
@@ -764,6 +758,7 @@ const AdminDashboardLayout = ({ children }: AdminDashboardLayoutProps) => {
                     getCurrentPageTitle={getCurrentPageTitle}
                     handleLogout={handleLogout}
                     unreadNotifications={unreadNotifications}
+                    menuItems={menuItems}
                     session={session}
                     sidebarCollapsed={sidebarCollapsed}
                 />

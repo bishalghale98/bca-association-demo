@@ -20,6 +20,7 @@ import { DeleteModal } from '@/components/common/delete-confirmation';
 import { useAppDispatch } from '@/store/hooks';
 import EventRegistrationModal from '../eventRegistration/EventRegistrationModal';
 import { formatDateTime } from '@/utils/formatDate';
+import { getEventStatus, isPastEvent, isUpcomingEvent } from '@/utils/event';
 
 
 interface EventCardProps {
@@ -51,37 +52,7 @@ const EventCard: React.FC<EventCardProps> = ({
         return event.startDate && event.endDate && event.startDate !== event.endDate;
     };
 
-    const isPastEvent = () => {
-        const now = new Date();
-        const endDate = event.endDate ? new Date(event.endDate) :
-            event.eventDate ? new Date(event.eventDate) : new Date();
-        return endDate < now;
-    };
 
-    const isUpcomingEvent = () => {
-        const now = new Date();
-        const startDate = event.startDate ? new Date(event.startDate) :
-            event.eventDate ? new Date(event.eventDate) : new Date();
-        return startDate > now;
-    };
-
-    const getEventStatus = () => {
-        if (isPastEvent()) return {
-            label: 'Past',
-            variant: 'outline' as const,
-            color: 'text-muted-foreground bg-muted/50'
-        };
-        if (isUpcomingEvent()) return {
-            label: 'Upcoming',
-            variant: 'default' as const,
-            color: 'text-primary-foreground bg-primary'
-        };
-        return {
-            label: 'Live Now',
-            variant: 'destructive' as const,
-            color: 'text-destructive-foreground bg-destructive'
-        };
-    };
 
     const getDurationDays = () => {
         if (!isMultiDayEvent() || !event.startDate || !event.endDate) return null;
@@ -113,7 +84,6 @@ const EventCard: React.FC<EventCardProps> = ({
 
 
 
-    // Check if user has admin/editor role
 
     if (viewMode === 'list') {
         return (
@@ -125,7 +95,7 @@ const EventCard: React.FC<EventCardProps> = ({
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className={`p-2 rounded-lg ${getEventStatus().color}`}>
+                                <div className={`p-2 rounded-lg ${getEventStatus(event).color}`}>
                                     {isMultiDayEvent() ? (
                                         <CalendarRangeIcon className="h-5 w-5" />
                                     ) : (
@@ -137,8 +107,8 @@ const EventCard: React.FC<EventCardProps> = ({
                                         {event.title}
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant={getEventStatus().variant} className="text-xs">
-                                            {getEventStatus().label}
+                                        <Badge variant={getEventStatus(event).variant} className="text-xs">
+                                            {getEventStatus(event).label}
                                         </Badge>
                                         {event.type && (
                                             <Badge className="text-xs mr-2">
@@ -234,7 +204,7 @@ const EventCard: React.FC<EventCardProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!isPastEvent() && (
+                            {!isPastEvent(event) && (
                                 <Button
                                     onClick={() => handleRegister(event)}
                                     size="sm"
@@ -258,10 +228,10 @@ const EventCard: React.FC<EventCardProps> = ({
             {/* Status badges */}
             <div className="absolute top-4 right-4 z-10">
                 <Badge
-                    variant={getEventStatus().variant}
+                    variant={getEventStatus(event).variant}
                     className="rounded-full px-3 py-1"
                 >
-                    {getEventStatus().label}
+                    {getEventStatus(event).label}
                 </Badge>
                 {event.type && (
                     <Badge className="mt-2 rounded-full px-3 py-1">
@@ -332,7 +302,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
                     {/* Action buttons */}
                     <div className="flex items-center gap-2">
-                        {role && !isPastEvent() && (
+                        {role && !isPastEvent(event) && (
                             <>
 
                                 <Button
@@ -366,9 +336,9 @@ const EventCard: React.FC<EventCardProps> = ({
                         <Button
                             onClick={() => handleRegister(event)}
                             className="flex-1"
-                            disabled={isPastEvent()}
+                            disabled={!isUpcomingEvent(event)}
                         >
-                            {isPastEvent() ? 'Event Ended' : 'Register'}
+                            {isUpcomingEvent(event) ? 'Register' : 'Registration ClosedF'}
                         </Button>
 
                     </div>

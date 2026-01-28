@@ -10,6 +10,7 @@ import {
 import Link from 'next/link'
 import React from 'react'
 import { Button } from '../ui/button'
+import Image from 'next/image'
 
 const HeroSection = () => {
     return (
@@ -119,7 +120,13 @@ const HeroSection = () => {
                     {/* RIGHT IMAGE */}
                     <div className="relative hidden md:block">
                         <div className="h-[360px] lg:h-[460px] rounded-2xl border overflow-hidden flex items-center justify-center bg-linear-to-br from-[#2563EB]/20 to-[#38BDF8]/20">
-                            <GraduationCap className="w-20 h-20 text-[#2563EB]" />
+                            <Image
+                                src="/bca-mmamc-association-logo.png"
+                                alt="Logo"
+                                width={500}
+                                height={500}
+                                className="rounded-lg w-full h-full object-cover"
+                            />
                         </div>
                     </div>
 

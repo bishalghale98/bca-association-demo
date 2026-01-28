@@ -68,13 +68,13 @@ function Navbar() {
                 <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-lg sm:rounded-xl flex items-center justify-center">
+                        <div className="w-9 h-9 sm:w-10 border sm:h-10 md:w-11 md:h-11 rounded-lg sm:rounded-xl flex items-center justify-center">
                             <Image
                                 src="/bca-mmamc-association-logo.png"
                                 alt="Logo"
                                 width={50}
                                 height={50}
-                                className="rounded-lg"
+                                className="rounded-lg w-full h-full object-cover"
                             />
 
                         </div>

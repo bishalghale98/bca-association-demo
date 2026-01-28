@@ -24,7 +24,7 @@ export async function proxy(request: NextRequest) {
       case UserRole.MEMBER:
         return NextResponse.redirect(new URL("/dashboard", request.url));
       case UserRole.ADMIN:
-        return NextResponse.redirect(new URL("/admin", request.url));
+        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
       case UserRole.SUPER_ADMIN:
         return NextResponse.redirect(new URL("/super-admin", request.url));
     }

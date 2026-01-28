@@ -36,6 +36,9 @@ interface DeleteModalProps {
     isLoading?: boolean
     /** Callback when deletion is successful */
     onSuccess?: () => void
+
+    confirmButtonCss?: string
+    icon: boolean
 }
 
 export function DeleteModal({
@@ -49,7 +52,9 @@ export function DeleteModal({
     confirmText = "Delete",
     cancelText = "Cancel",
     isLoading = false,
+    confirmButtonCss,
     onSuccess,
+    icon = true,
 }: DeleteModalProps) {
     const [isDeleting, setIsDeleting] = useState(false)
 
@@ -75,9 +80,11 @@ export function DeleteModal({
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                        </div>
+                        {icon &&
+                            <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </div>
+                        }
                         {actualTitle}
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">
@@ -95,12 +102,12 @@ export function DeleteModal({
                             handleConfirm()
                         }}
                         disabled={isDeleting || isLoading}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        className={confirmButtonCss || "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
                     >
                         {(isDeleting || isLoading) ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
+                                {confirmText}ing...
                             </>
                         ) : (
                             confirmText

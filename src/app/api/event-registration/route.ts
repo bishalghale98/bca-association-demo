@@ -7,10 +7,18 @@ export function POST(req: NextRequest) {
 
 
 export function GET(req: NextRequest) {
+
+    const eventId = req.nextUrl.searchParams.get("eventId");
+
+    if (eventId) {
+        return eventRegistration.getRegistrationsByEventId(req, eventId);
+    }
+
+
     return eventRegistration.getAllRegisterEvent(req);
 }
 
 
-export function PUT(req: NextRequest) {
+export function PATCH(req: NextRequest) {
     return eventRegistration.updateEventAttendance(req);
 }

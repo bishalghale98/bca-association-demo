@@ -3,6 +3,7 @@ import { AxiosError } from "axios";
 import { api } from "@/lib/api";
 import { Status } from "../types";
 import { IEvent } from "../event/eventSlice";
+import { IUser } from "../auth/authSlice";
 
 /* ================= TYPES ================= */
 
@@ -16,7 +17,8 @@ export interface IEventRegistration {
     userId: string;
     createdAt: string;
     updatedAt: string;
-    event: IEvent;
+    event?: IEvent;
+    user?: IUser;
 }
 
 export interface EventRegistrationFormValues {
@@ -37,6 +39,7 @@ interface EventRegistrationState {
     registerStatus: Status;
     fetchMyStatus: Status;
     updateAttendanceStatus: Status;
+    fetchRegistrationsStatus: Status;
 
     error: string | null;
 }
@@ -49,6 +52,7 @@ const initialState: EventRegistrationState = {
     registerStatus: Status.IDLE,
     fetchMyStatus: Status.IDLE,
     updateAttendanceStatus: Status.IDLE,
+    fetchRegistrationsStatus: Status.IDLE,
 
     error: null,
 };
@@ -98,7 +102,25 @@ export const updateEventAttendance = createAsyncThunk<
     { rejectValue: string }
 >("eventRegistration/updateAttendance", async ({ id, attended }, { rejectWithValue }) => {
     try {
-        const res = await api.put("/event-registration", { id, attended });
+        const res = await api.patch("/event-registration", { id, attended });
+        if (!res.data.success) return rejectWithValue(res.data.message);
+        return res.data.data;
+    } catch (err) {
+        const error = err as AxiosError<{ message: string }>;
+        return rejectWithValue(
+            error.response?.data?.message || "Something went wrong"
+        );
+    }
+});
+
+/* GET ALL REGISTRATIONS BY EVENT ID */
+export const getRegistrationsByEventId = createAsyncThunk<
+    IEventRegistration[],
+    string,
+    { rejectValue: string }
+>("eventRegistration/getRegistrationsByEventId", async (eventId, { rejectWithValue }) => {
+    try {
+        const res = await api.get(`/event-registration?eventId=${eventId}`);
         if (!res.data.success) return rejectWithValue(res.data.message);
         return res.data.data;
     } catch (err) {
@@ -132,6 +154,10 @@ const eventRegistrationSlice = createSlice({
 
         resetUpdateAttendanceStatus: (state) => {
             state.updateAttendanceStatus = Status.IDLE;
+        },
+
+        resetFetchRegistrationsStatus: (state) => {
+            state.fetchRegistrationsStatus = Status.IDLE;
         },
     },
 
@@ -177,7 +203,21 @@ const eventRegistrationSlice = createSlice({
             .addCase(updateEventAttendance.rejected, (state, action) => {
                 state.updateAttendanceStatus = Status.ERROR;
                 state.error = action.payload as string;
-            });
+            })
+
+
+            /* ===== GET REGISTRATIONS BY EVENT ID ===== */
+            .addCase(getRegistrationsByEventId.pending, (state) => {
+                state.fetchRegistrationsStatus = Status.LOADING;
+            })
+            .addCase(getRegistrationsByEventId.fulfilled, (state, action: PayloadAction<IEventRegistration[]>) => {
+                state.fetchRegistrationsStatus = Status.SUCCESS;
+                state.registrations = action.payload;
+            })
+            .addCase(getRegistrationsByEventId.rejected, (state, action) => {
+                state.fetchRegistrationsStatus = Status.ERROR;
+                state.error = action.payload as string;
+            })
     },
 });
 
@@ -186,6 +226,7 @@ export const {
     resetRegisterStatus,
     resetFetchMyStatus,
     resetUpdateAttendanceStatus,
+    resetFetchRegistrationsStatus,
 } = eventRegistrationSlice.actions;
 
 export default eventRegistrationSlice.reducer;
