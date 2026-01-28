@@ -46,7 +46,7 @@ const EventRegistrationManage = ({ eventId }: { eventId: string }) => {
     if (fetchRegistrationsStatus === Status.LOADING) return <p>Loading...</p>
 
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md border h-dvh">
             <div className="flex items-center justify-between p-4">
                 <h2 className="text-lg font-semibold">Event Registrations</h2>
                 <Button variant="outline" size="sm" onClick={() => router.back()}>
@@ -61,35 +61,39 @@ const EventRegistrationManage = ({ eventId }: { eventId: string }) => {
                         <TableHead>Phone No</TableHead>
                         <TableHead>Message</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
+                        <TableHead className="text-center">Action</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {/* Row 1 */}
-                    {registrations?.map((registration, index) => (
-                        <TableRow key={registration.id}>
-                            <TableCell className="text-center font-medium">{index + 1}</TableCell>
-                            <TableCell className="font-medium">{registration.fullName}</TableCell>
-                            <TableCell>{registration.phone}</TableCell>
-                            <TableCell className="max-w-[300px] truncate">{registration.message}</TableCell>
-                            <TableCell className={registration.attended ? "text-green-500" : "text-red-500"}>{registration.attended ? "Attended" : "Not Attended"}</TableCell>
-
-                            <TableCell className="text-right">
-                                <button
-                                    onClick={() => handleAttended(registration)}
-                                    className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition
-                                      bg-green-100 text-green-600 hover:bg-green-200`}
-                                >
-                                    <>
-                                        <CheckCircle className="w-4 h-4" />
-                                    </>
-
-                                </button>
-                            </TableCell>
-
-
+                    {registrations.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center">No registrations found</TableCell>
                         </TableRow>
-                    ))}
+                    ) : (
+                        registrations?.map((registration, index) => (
+                            <TableRow key={registration.id}>
+                                <TableCell className="text-center font-medium">{index + 1}</TableCell>
+                                <TableCell className="font-medium">{registration.fullName}</TableCell>
+                                <TableCell>{registration.phone}</TableCell>
+                                <TableCell className="max-w-[300px] truncate">{registration.message}</TableCell>
+                                <TableCell className={registration.attended ? "text-green-500" : "text-red-500"}>{registration.attended ? "Attended" : "Not Attended"}</TableCell>
+
+                                <TableCell className="text-center">
+                                    <button
+                                        onClick={() => handleAttended(registration)}
+                                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition
+                                      bg-green-100 text-green-600 hover:bg-green-200`}
+                                    >
+                                        <>
+                                            <CheckCircle className="w-4 h-4" />
+                                        </>
+
+                                    </button>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
 
 
                 </TableBody>
@@ -102,11 +106,11 @@ const EventRegistrationManage = ({ eventId }: { eventId: string }) => {
                     onConfirm={() => handleConfirmAttended()}
                     itemName={editRegistration?.fullName as string}
                     itemType="Event"
-                    confirmText="Mark as Attended"
-                    confirmButtonCss="bg-green-500 text-green-foreground hover:bg-green/90"
+                    confirmText={`${editRegistration?.attended ? "Not Attend" : "Attend"}`}
+                    confirmButtonCss={`${editRegistration?.attended ? "bg-red-500 text-red-foreground hover:bg-red/90" : "bg-green-500 text-green-foreground hover:bg-green/90"}`}
                     icon={false}
-                    title="Mark as Attended"
-                    description="Are you sure you want to mark this registration as attended?"
+                    title={`${editRegistration?.attended ? "Not Attended" : "Attend"}`}
+                    description={`Are you sure you want to mark this registration as ${editRegistration?.attended ? "Attended" : "Not Attend"}?`}
                 />
             )}
 

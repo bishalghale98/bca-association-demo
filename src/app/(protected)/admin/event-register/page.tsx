@@ -174,7 +174,6 @@ const EventRegisterPage = () => {
 
                                 <Button
                                     onClick={() => router.push(`/admin/event-register?eventId=${event.id}`)}
-                                    disabled={isPastEvent(event) ? true : false}
                                     className={`flex items-center justify-center gap-2 w-full ${isPastEvent(event) ? 'bg-gray-500 hover:bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
                                     View Registration
                                     <svg
