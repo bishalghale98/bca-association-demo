@@ -15,6 +15,7 @@ import {
     UsersIcon,
     EditIcon,
     TrashIcon,
+    DeleteIcon,
 } from 'lucide-react';
 import { DeleteModal } from '@/components/common/delete-confirmation';
 import { useAppDispatch } from '@/store/hooks';
@@ -365,6 +366,7 @@ const EventCard: React.FC<EventCardProps> = ({
                     onConfirm={() => handleDelete(itemToDelete.id)}
                     itemName={itemToDelete.title}
                     itemType="Event"
+                    icon={true}
                 />
             )}
 

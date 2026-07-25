@@ -71,16 +71,16 @@ const EventTabContent = () => {
                                 <div className="space-y-1.5 sm:space-y-2 flex-1">
                                     <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                         <h4 className="font-bold text-sm sm:text-base text-[#0F172A] dark:text-[#E5E7EB]">
-                                            {registrations.event.title}
+                                            {registrations?.event?.title}
                                         </h4>
                                         <Badge variant="outline" className="border-[#2563EB] text-[#2563EB] text-xs">
-                                            {registrations.event.type}
+                                            {registrations?.event?.type}
                                         </Badge>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8]">
                                         <div className="flex items-center gap-1">
                                             <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                            {registrations.event.eventDate ? formatDateTime(registrations.event.eventDate).fullDateTime : `${formatDateTime(registrations.event.startDate!).fullDateTime} - ${formatDateTime(registrations.event.endDate!).fullDateTime}`}
+                                            {registrations?.event?.eventDate ? formatDateTime(registrations?.event?.eventDate).fullDateTime : `${formatDateTime(registrations?.event?.startDate!).fullDateTime} - ${formatDateTime(registrations?.event?.endDate!).fullDateTime}`}
                                         </div>
                                         <div className="flex items-center gap-1">
 

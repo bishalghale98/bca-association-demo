@@ -263,7 +263,7 @@ const MobileDashboard = ({
                                         <div className="space-y-1.5 sm:space-y-2">
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge variant="outline" className="border-[#2563EB] text-[#2563EB] text-[10px] sm:text-xs px-1.5 sm:px-2 py-0">
-                                                    {registration.event.type}
+                                                    {registration?.event?.type}
                                                 </Badge>
                                                 <Badge className={cn(
                                                     "border-0 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0",
@@ -274,13 +274,13 @@ const MobileDashboard = ({
                                                 </Badge>
                                             </div>
                                             <h4 className="font-bold text-xs sm:text-sm text-[#0F172A] dark:text-[#E5E7EB] line-clamp-2">
-                                                {registration.event.title}
+                                                {registration?.event?.title}
                                             </h4>
                                             <div className="flex items-center text-[11px] sm:text-xs text-[#475569] dark:text-[#94A3B8]">
                                                 <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
-                                                {registration.event.eventDate ? (formatDateTime(registration.event.eventDate).fullDateTime)
+                                                {registration?.event?.eventDate ? (formatDateTime(registration?.event?.eventDate).fullDateTime)
                                                     :
-                                                    (formatDateTime(registration.event.startDate!).fullDateTime + " to " + formatDateTime(registration.event.endDate!).fullDateTime)}
+                                                    (formatDateTime(registration?.event?.startDate!).fullDateTime + " to " + formatDateTime(registration?.event?.endDate!).fullDateTime)}
                                             </div>
 
                                         </div>

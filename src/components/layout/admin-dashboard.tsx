@@ -175,7 +175,7 @@ const MobileHeader = ({
                                         Admin Menu
                                     </p>
 
-                                    {mobileMenuItems.map((item) => {
+                                    {mobileMenuItems.map((item: any) => {
                                         const Icon = item.icon
                                         const isActive =
                                             pathname === item.href ||
@@ -716,7 +716,7 @@ const AdminDashboardLayout = ({ children }: AdminDashboardLayoutProps) => {
                         <div>
                             <h2 className="text-2xl font-bold">Access Denied</h2>
                             <p className="text-muted-foreground mt-2">
-                                You don't have permission to access the admin panel.
+                                You don&apos;t have permission to access the admin panel.
                             </p>
                         </div>
                         <Button asChild className="w-full">
